@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Inventory Scanner</title>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       max-width: 600px;
@@ -50,6 +56,16 @@
       min-height: 30px;
     }
 
+    #lastItem {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #counter {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
     button {
       width: 100%;
       padding: 16px;
@@ -67,90 +83,164 @@
     #clearButton {
       background: #ddd;
     }
+
+    .success {
+      background: #d7f5df !important;
+    }
+
+    .error {
+      background: #ffdada !important;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <h1>Inventory Scanner</h1>
 
+
 <div class="box">
+
   Current Location
-  <div id="location">Not selected</div>
+
+  <div id="location">
+    Not selected
+  </div>
+
 </div>
+
+
+<div class="box">
+
+  Last Item
+
+  <div id="lastItem">
+    —
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  Items Scanned
+
+  <div id="counter">
+    0
+  </div>
+
+</div>
+
 
 <button id="startButton">
   START SCANNER
 </button>
 
+
 <div id="reader"></div>
 
+
 <div id="status">
+
   Scan Location QR first
+
 </div>
 
+
 <button id="clearButton">
+
   CLEAR LOCATION
+
 </button>
+
 
 
 <script>
 
+
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
+"https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
+
 
 
 let currentLocation =
-  localStorage.getItem("inventoryLocation") || "";
+localStorage.getItem("inventoryLocation") || "";
+
 
 let scanner = null;
 
 let lastCode = "";
+
 let lastScanTime = 0;
+
+let scannedCount = 0;
+
 
 
 const locationDisplay =
-  document.getElementById("location");
+document.getElementById("location");
+
 
 const statusDisplay =
-  document.getElementById("status");
+document.getElementById("status");
+
+
+const lastItemDisplay =
+document.getElementById("lastItem");
+
+
+const counterDisplay =
+document.getElementById("counter");
+
 
 const startButton =
-  document.getElementById("startButton");
+document.getElementById("startButton");
+
 
 const clearButton =
-  document.getElementById("clearButton");
+document.getElementById("clearButton");
+
 
 
 if (currentLocation) {
 
   locationDisplay.innerText =
-    currentLocation;
+  currentLocation;
 
   statusDisplay.innerText =
-    "Ready. Scan Item QR.";
+  "Ready. Scan Item QR.";
+
 }
 
 
+
 startButton.addEventListener(
-  "click",
-  startScanner
+"click",
+startScanner
 );
 
 
 clearButton.addEventListener(
-  "click",
-  clearLocation
+"click",
+clearLocation
 );
+
 
 
 function startScanner() {
 
+
   statusDisplay.innerText =
-    "Starting camera...";
+  "Starting camera...";
+
 
   scanner =
-    new Html5Qrcode("reader");
+  new Html5Qrcode("reader");
+
 
   scanner.start(
 
@@ -159,296 +249,513 @@ function startScanner() {
     },
 
     {
+
       fps: 10,
 
       qrbox: {
         width: 250,
         height: 250
       }
+
     },
 
     onScanSuccess,
 
-    function () {
-      // Ignore normal scanning errors
-    }
+    function () {}
 
   )
 
+
   .then(function () {
 
+
     startButton.style.display =
-      "none";
+    "none";
+
 
     if (currentLocation) {
 
       statusDisplay.innerText =
-        "Ready. Scan Item QR.";
+      "Ready. Scan Item QR.";
 
     } else {
 
       statusDisplay.innerText =
-        "Scan Location QR first";
+      "Scan Location QR first";
+
     }
 
   })
 
-  .catch(function (error) {
+
+  .catch(function(error) {
 
     statusDisplay.innerText =
-      "Camera error: " + error;
+    "Camera error: " + error;
+
   });
+
 }
 
 
 
 function onScanSuccess(decodedText) {
 
+
   const now =
-    Date.now();
+  Date.now();
+
 
   const code =
-    decodedText.trim();
+  decodedText.trim();
+
 
 
   if (
+
     code === lastCode &&
+
     now - lastScanTime < 2500
+
   ) {
+
     return;
+
   }
 
 
+
   lastCode =
-    code;
+  code;
+
 
   lastScanTime =
-    now;
+  now;
 
 
-  // LOCATION
+
+  // LOCATION QR
   // Example: L:1
 
+
   if (
+
     code.toUpperCase().startsWith("L:")
+
   ) {
 
+
     const location =
-      code.substring(2).trim();
+    code.substring(2).trim();
 
 
     if (!location) {
+
       return;
+
     }
 
 
     currentLocation =
-      location;
+    location;
 
 
     localStorage.setItem(
+
       "inventoryLocation",
+
       currentLocation
+
     );
 
 
     locationDisplay.innerText =
-      currentLocation;
+    currentLocation;
+
+
+    statusDisplay.className =
+    "success";
 
 
     statusDisplay.innerText =
-      "✓ Location " +
-      currentLocation +
-      " selected";
+
+    "✓ Location " +
+
+    currentLocation +
+
+    " selected";
 
 
     vibrate();
 
+
     return;
+
   }
 
 
 
-  // ITEM
+  // ITEM QR
   // Example: I:5067
 
+
   if (
+
     code.toUpperCase().startsWith("I:")
+
   ) {
 
+
     const item =
-      code.substring(2).trim();
+    code.substring(2).trim();
 
 
     if (!item) {
+
       return;
+
     }
+
 
 
     if (!currentLocation) {
 
-      statusDisplay.innerText =
-        "ERROR: Scan Location first";
+
+      showError(
+
+        "Scan Location first"
+
+      );
+
 
       return;
+
     }
+
 
 
     saveItem(item);
 
+
     return;
+
   }
 
 
-  statusDisplay.innerText =
-    "Unknown QR: " + code;
+
+  showError(
+
+    "Unknown QR: " + code
+
+  );
+
 }
 
 
 
 function saveItem(item) {
 
+
+  statusDisplay.className =
+  "";
+
+
   statusDisplay.innerText =
-    "Saving Item #" + item + "...";
+
+  "Saving Item #" +
+
+  item +
+
+  "...";
+
+
 
   const callbackName =
-    "inventoryCallback_" + Date.now();
+
+  "inventoryCallback_" +
+
+  Date.now();
+
+
 
   const script =
-    document.createElement("script");
+
+  document.createElement("script");
+
+
 
   const url =
-    API_URL +
-    "?action=update" +
-    "&item=" + encodeURIComponent(item) +
-    "&location=" + encodeURIComponent(currentLocation) +
-    "&callback=" + encodeURIComponent(callbackName);
+
+  API_URL +
+
+  "?action=update" +
+
+  "&item=" +
+
+  encodeURIComponent(item) +
+
+  "&location=" +
+
+  encodeURIComponent(currentLocation) +
+
+  "&callback=" +
+
+  encodeURIComponent(callbackName) +
+
+  "&t=" +
+
+  Date.now();
+
 
 
   let finished = false;
 
 
-  window[callbackName] = function(data) {
+
+  window[callbackName] =
+
+  function(data) {
+
 
     finished = true;
 
+
+
     if (data.success) {
 
-      statusDisplay.innerText =
-        "✓ Item #" +
-        item +
-        " → Location " +
-        currentLocation;
 
-      vibrate();
+      scannedCount++;
+
+
+      counterDisplay.innerText =
+      scannedCount;
+
+
+      lastItemDisplay.innerText =
+      "#" + item;
+
+
+      statusDisplay.className =
+      "success";
+
+
+      statusDisplay.innerText =
+
+      "✓ Item #" +
+
+      item +
+
+      " → Location " +
+
+      currentLocation;
+
+
+      vibrateSuccess();
+
 
     } else {
 
-      statusDisplay.innerText =
-        "ERROR: " + data.message;
+
+      showError(
+
+        data.message ||
+
+        "Item not found"
+
+      );
+
     }
 
 
+
     cleanup();
+
   };
+
 
 
   script.onerror = function() {
 
+
     if (!finished) {
 
-      statusDisplay.innerText =
-        "ERROR: Could not reach server";
+
+      showError(
+
+        "Could not reach server"
+
+      );
+
     }
 
+
     cleanup();
+
   };
 
 
-  script.src = url;
 
-  document.body.appendChild(script);
+  script.src =
+  url;
+
+
+  document.body.appendChild(
+  script
+  );
+
 
 
   setTimeout(function() {
 
+
     if (!finished) {
 
-      statusDisplay.innerText =
-        "ERROR: Server timeout";
+
+      showError(
+
+        "Server timeout"
+
+      );
+
 
       cleanup();
+
     }
 
   }, 10000);
 
 
+
   function cleanup() {
 
+
     if (script.parentNode) {
-      script.parentNode.removeChild(script);
+
+      script.parentNode.removeChild(
+      script
+      );
+
     }
 
+
     try {
-      delete window[callbackName];
-    } catch (e) {}
+
+      delete window[
+      callbackName
+      ];
+
+    } catch(e) {}
+
   }
+
 }
-  .then(function () {
-
-    statusDisplay.innerText =
-      "✓ Item #" +
-      item +
-      " → Location " +
-      currentLocation;
 
 
-    vibrate();
 
-  })
+function showError(message) {
 
-  .catch(function (error) {
 
-    statusDisplay.innerText =
-      "Connection error: " +
-      error;
+  statusDisplay.className =
+  "error";
 
-  });
+
+  statusDisplay.innerText =
+
+  "ERROR: " +
+
+  message;
+
+
+  vibrateError();
+
 }
 
 
 
 function clearLocation() {
 
+
   currentLocation =
-    "";
+  "";
 
 
   localStorage.removeItem(
-    "inventoryLocation"
+  "inventoryLocation"
   );
 
 
   locationDisplay.innerText =
-    "Not selected";
+  "Not selected";
+
+
+  lastItemDisplay.innerText =
+  "—";
+
+
+  scannedCount =
+  0;
+
+
+  counterDisplay.innerText =
+  "0";
+
+
+  statusDisplay.className =
+  "";
 
 
   statusDisplay.innerText =
-    "Scan Location QR first";
+  "Scan Location QR first";
+
 }
 
 
 
 function vibrate() {
 
+
   if (navigator.vibrate) {
 
     navigator.vibrate(100);
 
   }
+
 }
+
+
+
+function vibrateSuccess() {
+
+
+  if (navigator.vibrate) {
+
+    navigator.vibrate(
+    [100, 50, 100]
+    );
+
+  }
+
+}
+
+
+
+function vibrateError() {
+
+
+  if (navigator.vibrate) {
+
+    navigator.vibrate(
+    [300, 100, 300]
+    );
+
+  }
+
+}
+
 
 </script>
 
+
 </body>
+
 </html>
