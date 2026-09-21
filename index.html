@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 15px;
+      text-align: center;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+
+    #reader {
+      width: 100%;
+      background: white;
+      margin-top: 15px;
+    }
+
+    .location {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    #location {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    #status {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      font-size: 20px;
+      min-height: 30px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      font-size: 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #startButton {
+      background: #1677ff;
+      color: white;
+    }
+
+    #clearButton {
+      background: #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Inventory Scanner</h1>
+
+  <div class="location">
+    Current Location
+    <div id="location">Not selected</div>
+  </div>
+
+  <button id="startButton" onclick="startScanner()">
+    START SCANNER
+  </button>
+
+  <div id="reader"></div>
+
+  <div id="status">
+    Scan Location QR first
+  </div>
+
+  <button id="clearButton" onclick="clearLocation()">
+    CLEAR LOCATION
+  </button>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
+
+let currentLocation = localStorage.getItem("inventoryLocation") || "";
+let lastCode = "";
+let lastScanTime = 0;
+let scanner = null;
+
+if (currentLocation) {
+  document.getElementById("location").innerText = currentLocation;
+  document.getElementById("status").innerText =
+    "Ready. Scan Item QR.";
+}
+
+function startScanner() {
+
+  document.getElementById("startButton").style.display = "none";
+
+  scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
+    onScanSuccess,
+    function() {}
+  ).catch(function(error) {
+
+    document.getElementById("status").innerText =
+      "Camera error: " + error;
+
+    document.getElementById("startButton").style.display = "block";
+  });
+}
+
+function onScanSuccess(decodedText) {
+
+  const now = Date.now();
+
+  // Prevent the same QR from firing repeatedly
+  if (decodedText === lastCode && now - lastScanTime < 2500) {
+    return;
+  }
+
+  lastCode = decodedText;
+  lastScanTime = now;
+
+  const code = decodedText.trim();
+
+  // LOCATION QR: L:1
+  if (code.toUpperCase().startsWith("L:")) {
+
+    const location = code.substring(2).trim();
+
+    if (!location) return;
+
+    currentLocation = location;
+
+    localStorage.setItem(
+      "inventoryLocation",
+      currentLocation
+    );
+
+    document.getElementById("location").innerText =
+      currentLocation;
+
+    document.getElementById("status").innerText =
+      "✓ Location " + currentLocation + " selected";
+
+    beep();
+
+    return;
+  }
+
+  // ITEM QR: I:5067
+  if (code.toUpperCase().startsWith("I:")) {
+
+    const item = code.substring(2).trim();
+
+    if (!currentLocation) {
+
+      document.getElementById("status").innerText =
+        "ERROR: Scan Location first";
+
+      return;
+    }
+
+    document.getElementById("status").innerText =
+      "Saving Item #" + item + "...";
+
+    saveItem(item);
+
+    return;
+  }
+
+  document.getElementById("status").innerText =
+    "Unknown QR: " + code;
+}
+
+
+function saveItem(item) {
+
+  fetch(API_URL, {
+    method: "POST",
+
+    body: JSON.stringify({
+      item: item,
+      location: currentLocation
+    })
+  })
+
+  .then(response => response.json())
+
+  .then(data => {
+
+    if (data.success) {
+
+      document.getElementById("status").innerText =
+        "✓ Item #" + item +
+        " → Location " + currentLocation;
+
+      beep();
+
+    } else {
+
+      document.getElementById("status").innerText =
+        "ERROR: " + data.message;
+    }
+  })
+
+  .catch(error => {
+
+    document.getElementById("status").innerText =
+      "Connection error: " + error;
+  });
+}
+
+
+function clearLocation() {
+
+  currentLocation = "";
+
+  localStorage.removeItem("inventoryLocation");
+
+  document.getElementById("location").innerText =
+    "Not selected";
+
+  document.getElementById("status").innerText =
+    "Scan Location QR first";
+}
+
+
+function beep() {
+
+  if (navigator.vibrate) {
+    navigator.vibrate(100);
+  }
+}
+
+</script>
+
+</body>
+</html>
