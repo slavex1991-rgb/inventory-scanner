@@ -54,6 +54,7 @@
       margin-top: 15px;
       font-size: 20px;
       min-height: 30px;
+      transition: background 0.15s ease;
     }
 
     #lastItem {
@@ -85,20 +86,16 @@
     }
 
     .success {
-  background: #22c55e !important;
-  color: white !important;
-  font-weight: bold;
-}
+      background: #22c55e !important;
+      color: white !important;
+      font-weight: bold;
+    }
 
-.error {
-  background: #ef4444 !important;
-  color: white !important;
-  font-weight: bold;
-}
-
-#status {
-  transition: background 0.15s ease;
-}
+    .error {
+      background: #ef4444 !important;
+      color: white !important;
+      font-weight: bold;
+    }
 
   </style>
 
@@ -187,6 +184,8 @@ let lastScanTime = 0;
 
 let scannedCount = 0;
 
+let audioContext = null;
+
 
 
 const locationDisplay =
@@ -240,6 +239,63 @@ clearLocation
 
 
 function startScanner() {
+
+
+  // Activate audio while user is pressing the button.
+  // This is important for iPhone / Safari.
+
+  try {
+
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+
+    if (!audioContext) {
+
+      audioContext =
+      new AudioContext();
+
+    }
+
+
+    if (audioContext.state === "suspended") {
+
+      audioContext.resume();
+
+    }
+
+
+    // Silent oscillator unlocks audio on iPhone.
+
+    const unlockOscillator =
+      audioContext.createOscillator();
+
+    const unlockGain =
+      audioContext.createGain();
+
+
+    unlockGain.gain.value =
+      0.0001;
+
+
+    unlockOscillator.connect(
+      unlockGain
+    );
+
+    unlockGain.connect(
+      audioContext.destination
+    );
+
+
+    unlockOscillator.start();
+
+    unlockOscillator.stop(
+      audioContext.currentTime + 0.05
+    );
+
+
+  } catch(e) {}
 
 
   statusDisplay.innerText =
@@ -345,7 +401,6 @@ function onScanSuccess(decodedText) {
   // LOCATION QR
   // Example: L:1
 
-
   if (
 
     code.toUpperCase().startsWith("L:")
@@ -396,6 +451,8 @@ function onScanSuccess(decodedText) {
 
     vibrate();
 
+    playLocationTone();
+
 
     return;
 
@@ -405,7 +462,6 @@ function onScanSuccess(decodedText) {
 
   // ITEM QR
   // Example: I:5067
-
 
   if (
 
@@ -608,7 +664,7 @@ function saveItem(item) {
 
 
   document.body.appendChild(
-  script
+    script
   );
 
 
@@ -640,7 +696,7 @@ function saveItem(item) {
     if (script.parentNode) {
 
       script.parentNode.removeChild(
-      script
+        script
       );
 
     }
@@ -649,7 +705,7 @@ function saveItem(item) {
     try {
 
       delete window[
-      callbackName
+        callbackName
       ];
 
     } catch(e) {}
@@ -688,7 +744,7 @@ function clearLocation() {
 
 
   localStorage.removeItem(
-  "inventoryLocation"
+    "inventoryLocation"
   );
 
 
@@ -732,64 +788,163 @@ function vibrate() {
 
 
 
-function playTone(frequency, duration) {
+function playTone(
+  frequency,
+  duration,
+  volume
+) {
+
 
   try {
 
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
 
-    const audio =
-      new AudioContext();
+    if (!audioContext) {
+
+      return;
+
+    }
+
+
+    if (audioContext.state === "suspended") {
+
+      audioContext.resume();
+
+    }
+
 
     const oscillator =
-      audio.createOscillator();
+      audioContext.createOscillator();
+
 
     const gain =
-      audio.createGain();
+      audioContext.createGain();
 
-    oscillator.connect(gain);
-    gain.connect(audio.destination);
+
+    oscillator.connect(
+      gain
+    );
+
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.type =
+      "sine";
+
 
     oscillator.frequency.value =
       frequency;
 
-    gain.gain.value =
-      0.15;
+
+    gain.gain.setValueAtTime(
+
+      volume || 0.35,
+
+      audioContext.currentTime
+
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+
+      0.01,
+
+      audioContext.currentTime +
+      duration / 1000
+
+    );
+
 
     oscillator.start();
 
-    setTimeout(function() {
 
-      oscillator.stop();
-      audio.close();
+    oscillator.stop(
 
-    }, duration);
+      audioContext.currentTime +
+      duration / 1000
+
+    );
+
 
   } catch(e) {}
 
 }
 
 
+
+function playLocationTone() {
+
+
+  playTone(
+    650,
+    120,
+    0.25
+  );
+
+}
+
+
+
 function vibrateSuccess() {
 
+
   if (navigator.vibrate) {
-    navigator.vibrate([100, 50, 100]);
+
+    navigator.vibrate(
+      [100, 50, 100]
+    );
+
   }
 
-  playTone(900, 150);
+
+  // Two high beeps = successful item
+
+  playTone(
+    850,
+    120,
+    0.35
+  );
+
+
+  setTimeout(function() {
+
+    playTone(
+      1150,
+      160,
+      0.35
+    );
+
+  }, 130);
+
 }
+
 
 
 function vibrateError() {
 
+
   if (navigator.vibrate) {
-    navigator.vibrate([300, 100, 300]);
+
+    navigator.vibrate(
+      [300, 100, 300]
+    );
+
   }
 
-  playTone(250, 400);
+
+  // Low tone = error
+
+  playTone(
+    220,
+    450,
+    0.4
+  );
+
 }
+
+
 </script>
 
 
