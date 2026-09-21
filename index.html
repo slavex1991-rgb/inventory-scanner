@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -18,67 +17,62 @@
 
 body {
   font-family: Arial, sans-serif;
-  max-width: 600px;
+  max-width: 650px;
   margin: auto;
-  padding: 15px;
+  padding: 14px;
   text-align: center;
-  background: #f5f5f5;
+  background: #f3f4f6;
+  color: #111;
 }
 
 h1 {
+  margin: 8px 0 15px;
   font-size: 28px;
 }
 
 .box {
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 5px;
 }
 
 #modeDisplay {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 
 #location {
-  font-size: 38px;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-#reader {
-  width: 100%;
-  background: white;
-  margin-top: 15px;
-}
-
-#status {
-  background: white;
-  border-radius: 12px;
-  padding: 18px;
-  margin-top: 15px;
-  font-size: 20px;
-  min-height: 30px;
-}
-
-#lastItem {
-  font-size: 22px;
+  font-size: 40px;
   font-weight: bold;
 }
 
-#counter {
-  font-size: 30px;
-  font-weight: bold;
+.modeButtons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modeButtons button {
+  margin: 0;
 }
 
 button {
   width: 100%;
-  padding: 16px;
-  margin-top: 10px;
-  font-size: 18px;
+  padding: 15px;
+  margin-top: 9px;
+  font-size: 17px;
+  font-weight: bold;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
+  cursor: pointer;
 }
 
 #inventoryButton {
@@ -92,103 +86,218 @@ button {
 }
 
 #startButton {
-  background: #222;
+  background: #111827;
   color: white;
 }
 
 #undoButton {
   background: #ff9800;
   color: white;
-  font-weight: bold;
 }
 
 #undoButton:disabled {
-  background: #ccc;
+  background: #d1d5db;
   color: #777;
 }
 
 #clearButton {
-  background: #ddd;
+  background: #e5e7eb;
+  color: #111;
+}
+
+#reader {
+  width: 100%;
+  background: white;
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#status {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+  font-size: 20px;
+  min-height: 30px;
+  line-height: 1.45;
 }
 
 .success {
   background: #22c55e !important;
   color: white !important;
-  font-weight: bold;
+}
+
+.move {
+  background: #f59e0b !important;
+  color: white !important;
 }
 
 .error {
-  background: #ef4444 !important;
+  background: #dc2626 !important;
   color: white !important;
-  font-weight: bold;
+}
+
+.lookupStatus {
+  background: #6f42c1 !important;
+  color: white !important;
 }
 
 .undo {
-  background: #ff9800 !important;
+  background: #f97316 !important;
   color: white !important;
+}
+
+.notFound {
+  background: #b91c1c !important;
+  color: white !important;
+  font-size: 27px !important;
+  font-weight: bold;
+  padding: 28px 15px !important;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 5px;
+}
+
+.statNumber {
+  font-size: 28px;
   font-weight: bold;
 }
 
-.lookup {
-  background: #6f42c1 !important;
-  color: white !important;
-  font-weight: bold;
+.statLabel {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
 }
 
+.inputBox {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 12px;
+}
 
-/* PRODUCT CARD */
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #bbb;
+  border-radius: 9px;
+  font-size: 18px;
+  margin-top: 7px;
+}
+
+.inputButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.inputButtons button {
+  flex: 1;
+}
+
+#manualScanButton {
+  background: #1677ff;
+  color: white;
+}
+
+#manualLookupButton {
+  background: #6f42c1;
+  color: white;
+}
+
+#searchNameButton {
+  background: #374151;
+  color: white;
+}
 
 #productCard {
   display: none;
   background: white;
   border-radius: 14px;
-  padding: 20px;
-  margin-top: 15px;
+  padding: 18px;
+  margin-top: 12px;
   text-align: left;
 }
 
 #productName {
-  font-size: 24px;
+  font-size: 23px;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .productRow {
-  padding: 7px 0;
-  font-size: 19px;
+  padding: 8px 0;
   border-bottom: 1px solid #eee;
+  font-size: 18px;
 }
 
 #productQuantity {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: bold;
 }
 
-
-/* HISTORY */
-
-#historyBox {
+#searchResults {
+  display: none;
   background: white;
-  border-radius: 12px;
-  padding: 15px;
-  margin-top: 15px;
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 12px;
   text-align: left;
 }
 
-#historyList {
-  margin-top: 10px;
+.searchResult {
+  padding: 13px 8px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.searchResult:last-child {
+  border-bottom: 0;
+}
+
+.searchName {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.searchDetails {
+  color: #555;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+#historyBox {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 12px;
+  text-align: left;
 }
 
 .historyItem {
-  padding: 8px 0;
+  padding: 9px 0;
   border-bottom: 1px solid #eee;
-  font-size: 16px;
+  font-size: 15px;
+}
+
+.small {
+  font-size: 13px;
+  color: #666;
 }
 
 </style>
 
 </head>
-
 
 <body>
 
@@ -198,7 +307,9 @@ button {
 
 <div class="box">
 
-  MODE
+  <div class="label">
+    Mode
+  </div>
 
   <div id="modeDisplay">
     INVENTORY / MOVE
@@ -207,20 +318,24 @@ button {
 </div>
 
 
-<button id="inventoryButton">
-  📦 INVENTORY / MOVE
-</button>
+<div class="modeButtons">
 
+  <button id="inventoryButton">
+    📦 INVENTORY
+  </button>
 
-<button id="lookupButton">
-  🔍 PRODUCT LOOKUP
-</button>
+  <button id="lookupButton">
+    🔍 LOOKUP
+  </button>
 
+</div>
 
 
 <div class="box">
 
-  Current Location
+  <div class="label">
+    Current Location
+  </div>
 
   <div id="location">
     Not selected
@@ -229,29 +344,56 @@ button {
 </div>
 
 
+<div class="stats">
 
-<div class="box">
+  <div class="stat">
 
-  Last Item
+    <div
+      class="statNumber"
+      id="totalScans"
+    >
+      0
+    </div>
 
-  <div id="lastItem">
-    —
+    <div class="statLabel">
+      TOTAL SCANS
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div
+      class="statNumber"
+      id="uniqueItems"
+    >
+      0
+    </div>
+
+    <div class="statLabel">
+      UNIQUE ITEMS
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div
+      class="statNumber"
+      id="totalUnits"
+    >
+      0
+    </div>
+
+    <div class="statLabel">
+      UNITS ADDED
+    </div>
+
   </div>
 
 </div>
-
-
-
-<div class="box">
-
-  Items Scanned
-
-  <div id="counter">
-    0
-  </div>
-
-</div>
-
 
 
 <button id="startButton">
@@ -262,12 +404,66 @@ button {
 <div id="reader"></div>
 
 
-
 <div id="status">
   Scan Location QR first
 </div>
 
 
+<!-- MANUAL ITEM -->
+
+<div class="inputBox">
+
+  <div class="label">
+    Manual Item #
+  </div>
+
+  <input
+    id="manualItem"
+    type="text"
+    inputmode="numeric"
+    placeholder="Example: 5067"
+  >
+
+  <div class="inputButtons">
+
+    <button id="manualScanButton">
+      ADD / MOVE
+    </button>
+
+    <button id="manualLookupButton">
+      LOOKUP
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- NAME SEARCH -->
+
+<div class="inputBox">
+
+  <div class="label">
+    Search Product Name
+  </div>
+
+  <input
+    id="nameSearch"
+    type="text"
+    placeholder="Example: Tacoma"
+  >
+
+  <button id="searchNameButton">
+    SEARCH BY NAME
+  </button>
+
+</div>
+
+
+<div id="searchResults"></div>
+
+
+<!-- PRODUCT CARD -->
 
 <div id="productCard">
 
@@ -277,33 +473,32 @@ button {
 
   <div class="productRow">
     Item #:
-    <span id="productItem"></span>
+    <span id="productItem">—</span>
   </div>
 
   <div class="productRow">
     Price:
-    <span id="productPrice"></span>
+    <span id="productPrice">—</span>
   </div>
 
   <div class="productRow">
     Location:
-    <span id="productLocation"></span>
+    <span id="productLocation">—</span>
   </div>
 
   <div class="productRow">
     Quantity:
-    <span id="productQuantity"></span>
+    <span id="productQuantity">—</span>
   </div>
 
 </div>
-
 
 
 <button
   id="undoButton"
   disabled
 >
-  UNDO LAST ITEM
+  ↶ UNDO LAST ITEM
 </button>
 
 
@@ -312,19 +507,20 @@ button {
 </button>
 
 
-
 <div id="historyBox">
 
   <strong>
-    Recent Scans
+    Recent Activity
   </strong>
 
-  <div id="historyList">
-    No scans yet
+  <div
+    id="historyList"
+    class="small"
+  >
+    No activity yet
   </div>
 
 </div>
-
 
 
 <script>
@@ -334,96 +530,186 @@ const API_URL =
 "https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
 
 
+const SAME_QR_LOCK_TIME =
+8000;
+
 
 let currentLocation =
-localStorage.getItem("inventoryLocation") || "";
+localStorage.getItem(
+  "inventoryLocation"
+) || "";
 
 
 let currentMode =
 "inventory";
 
 
-let scanner = null;
-
-let scannerStarted = false;
-
-let scannedCount = 0;
-
-let audioContext = null;
+let scanner =
+null;
 
 
-/*
-  This contains everything required
-  to restore BOTH Location and Quantity.
-*/
-
-let lastSuccessfulScan = null;
+let scannerStarted =
+false;
 
 
-let scanHistory = [];
+let audioContext =
+null;
+
+
+let lastSuccessfulScan =
+null;
+
+
+let totalScanCount =
+0;
+
+
+let unitsAddedCount =
+0;
+
+
+let uniqueItemSet =
+new Set();
+
+
+let history =
+[];
 
 
 const recentScans =
 new Map();
 
 
-const SAME_QR_LOCK_TIME =
-8000;
 
-
-
-const modeDisplay =
-document.getElementById("modeDisplay");
+// ==========================================
+// ELEMENTS
+// ==========================================
 
 const locationDisplay =
-document.getElementById("location");
+document.getElementById(
+  "location"
+);
+
+const modeDisplay =
+document.getElementById(
+  "modeDisplay"
+);
 
 const statusDisplay =
-document.getElementById("status");
-
-const lastItemDisplay =
-document.getElementById("lastItem");
-
-const counterDisplay =
-document.getElementById("counter");
+document.getElementById(
+  "status"
+);
 
 const startButton =
-document.getElementById("startButton");
+document.getElementById(
+  "startButton"
+);
 
 const inventoryButton =
-document.getElementById("inventoryButton");
+document.getElementById(
+  "inventoryButton"
+);
 
 const lookupButton =
-document.getElementById("lookupButton");
+document.getElementById(
+  "lookupButton"
+);
 
 const undoButton =
-document.getElementById("undoButton");
+document.getElementById(
+  "undoButton"
+);
 
 const clearButton =
-document.getElementById("clearButton");
+document.getElementById(
+  "clearButton"
+);
+
+const manualItem =
+document.getElementById(
+  "manualItem"
+);
+
+const manualScanButton =
+document.getElementById(
+  "manualScanButton"
+);
+
+const manualLookupButton =
+document.getElementById(
+  "manualLookupButton"
+);
+
+const nameSearch =
+document.getElementById(
+  "nameSearch"
+);
+
+const searchNameButton =
+document.getElementById(
+  "searchNameButton"
+);
+
+const searchResults =
+document.getElementById(
+  "searchResults"
+);
 
 const productCard =
-document.getElementById("productCard");
+document.getElementById(
+  "productCard"
+);
 
 const productName =
-document.getElementById("productName");
+document.getElementById(
+  "productName"
+);
 
 const productItem =
-document.getElementById("productItem");
+document.getElementById(
+  "productItem"
+);
 
 const productPrice =
-document.getElementById("productPrice");
+document.getElementById(
+  "productPrice"
+);
 
 const productLocation =
-document.getElementById("productLocation");
+document.getElementById(
+  "productLocation"
+);
 
 const productQuantity =
-document.getElementById("productQuantity");
+document.getElementById(
+  "productQuantity"
+);
+
+const totalScansDisplay =
+document.getElementById(
+  "totalScans"
+);
+
+const uniqueItemsDisplay =
+document.getElementById(
+  "uniqueItems"
+);
+
+const totalUnitsDisplay =
+document.getElementById(
+  "totalUnits"
+);
 
 const historyList =
-document.getElementById("historyList");
+document.getElementById(
+  "historyList"
+);
 
 
+
+// ==========================================
+// INITIAL STATE
+// ==========================================
 
 if (currentLocation) {
 
@@ -437,6 +723,10 @@ if (currentLocation) {
 
 
 
+// ==========================================
+// BUTTONS
+// ==========================================
+
 inventoryButton.addEventListener(
   "click",
   function() {
@@ -447,33 +737,30 @@ inventoryButton.addEventListener(
     modeDisplay.innerText =
     "INVENTORY / MOVE";
 
-    productCard.style.display =
-    "none";
-
     recentScans.clear();
+
+    searchResults.style.display =
+    "none";
 
 
     if (currentLocation) {
 
-      statusDisplay.className =
-      "";
-
-      statusDisplay.innerText =
-      "Ready. Scan Item QR.";
+      setStatus(
+        "",
+        "Ready. Scan Item QR."
+      );
 
     } else {
 
-      statusDisplay.className =
-      "";
-
-      statusDisplay.innerText =
-      "Scan Location QR first";
+      setStatus(
+        "",
+        "Scan Location QR first"
+      );
 
     }
 
   }
 );
-
 
 
 lookupButton.addEventListener(
@@ -486,20 +773,15 @@ lookupButton.addEventListener(
     modeDisplay.innerText =
     "PRODUCT LOOKUP";
 
-    productCard.style.display =
-    "none";
-
     recentScans.clear();
 
-    statusDisplay.className =
-    "lookup";
-
-    statusDisplay.innerText =
-    "Scan Product QR";
+    setStatus(
+      "lookupStatus",
+      "Scan Product QR"
+    );
 
   }
 );
-
 
 
 startButton.addEventListener(
@@ -520,35 +802,144 @@ clearButton.addEventListener(
 );
 
 
+manualScanButton.addEventListener(
+  "click",
+  function() {
+
+    const item =
+    cleanItem(
+      manualItem.value
+    );
+
+
+    if (!item) {
+
+      showError(
+        "Enter Item #"
+      );
+
+      return;
+
+    }
+
+
+    if (!currentLocation) {
+
+      showError(
+        "Select Location first"
+      );
+
+      return;
+
+    }
+
+
+    saveItem(
+      item,
+      "manual"
+    );
+
+  }
+);
+
+
+manualLookupButton.addEventListener(
+  "click",
+  function() {
+
+    const item =
+    cleanItem(
+      manualItem.value
+    );
+
+
+    if (!item) {
+
+      showError(
+        "Enter Item #"
+      );
+
+      return;
+
+    }
+
+
+    lookupItem(item);
+
+  }
+);
+
+
+searchNameButton.addEventListener(
+  "click",
+  searchProductName
+);
+
+
+manualItem.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      lookupItem(
+        cleanItem(
+          manualItem.value
+        )
+      );
+
+    }
+
+  }
+);
+
+
+nameSearch.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      searchProductName();
+
+    }
+
+  }
+);
+
+
+
+// ==========================================
+// CAMERA
+// ==========================================
 
 function startScanner() {
 
-
   if (scannerStarted) {
-
     return;
-
   }
 
 
   unlockAudio();
 
 
-  statusDisplay.className =
-  "";
-
-  statusDisplay.innerText =
-  "Starting camera...";
+  setStatus(
+    "",
+    "Starting camera..."
+  );
 
 
   scanner =
-  new Html5Qrcode("reader");
+  new Html5Qrcode(
+    "reader"
+  );
 
 
   scanner.start(
 
     {
-      facingMode: "environment"
+      facingMode:
+        "environment"
     },
 
     {
@@ -568,38 +959,37 @@ function startScanner() {
 
   .then(function() {
 
-
     scannerStarted =
     true;
-
 
     startButton.style.display =
     "none";
 
 
-    if (currentMode === "lookup") {
+    if (
+      currentMode === "lookup"
+    ) {
 
-      statusDisplay.className =
-      "lookup";
+      setStatus(
+        "lookupStatus",
+        "Scan Product QR"
+      );
 
-      statusDisplay.innerText =
-      "Scan Product QR";
+    } else if (
+      currentLocation
+    ) {
 
-    } else if (currentLocation) {
-
-      statusDisplay.className =
-      "";
-
-      statusDisplay.innerText =
-      "Ready. Scan Item QR.";
+      setStatus(
+        "",
+        "Ready. Scan Item QR."
+      );
 
     } else {
 
-      statusDisplay.className =
-      "";
-
-      statusDisplay.innerText =
-      "Scan Location QR first";
+      setStatus(
+        "",
+        "Scan Location QR first"
+      );
 
     }
 
@@ -607,11 +997,10 @@ function startScanner() {
 
   .catch(function(error) {
 
-    statusDisplay.className =
-    "error";
-
-    statusDisplay.innerText =
-    "Camera error: " + error;
+    showError(
+      "Camera error: " +
+      error
+    );
 
   });
 
@@ -619,85 +1008,30 @@ function startScanner() {
 
 
 
-function unlockAudio() {
+// ==========================================
+// QR SCAN
+// ==========================================
 
-  try {
-
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-
-    if (!audioContext) {
-
-      audioContext =
-      new AudioContext();
-
-    }
-
-
-    if (
-      audioContext.state ===
-      "suspended"
-    ) {
-
-      audioContext.resume();
-
-    }
-
-
-    const osc =
-      audioContext.createOscillator();
-
-    const gain =
-      audioContext.createGain();
-
-
-    gain.gain.value =
-    0.0001;
-
-
-    osc.connect(gain);
-
-    gain.connect(
-      audioContext.destination
-    );
-
-
-    osc.start();
-
-    osc.stop(
-      audioContext.currentTime +
-      0.05
-    );
-
-
-  } catch(e) {}
-
-}
-
-
-
-function onScanSuccess(decodedText) {
-
+function onScanSuccess(
+  decodedText
+) {
 
   const code =
-  decodedText.trim();
+  String(decodedText || "")
+    .trim();
 
 
   const now =
   Date.now();
 
 
-  const previousScan =
+  const previous =
   recentScans.get(code) || 0;
 
 
   if (
-
-    now - previousScan <
+    now - previous <
     SAME_QR_LOCK_TIME
-
   ) {
 
     return;
@@ -711,96 +1045,55 @@ function onScanSuccess(decodedText) {
   );
 
 
+  cleanRecentScans(now);
 
-  for (
 
-    const [savedCode, savedTime]
-    of recentScans
 
+  // LOOKUP MODE
+
+  if (
+    currentMode === "lookup"
   ) {
 
     if (
-
-      now - savedTime >
-      SAME_QR_LOCK_TIME
-
-    ) {
-
-      recentScans.delete(
-        savedCode
-      );
-
-    }
-
-  }
-
-
-
-  /*
-    LOOKUP MODE
-
-    Location QR does nothing here.
-    Item QR only READS the Sheet.
-  */
-
-  if (currentMode === "lookup") {
-
-
-    if (
-
       code.toUpperCase()
         .startsWith("I:")
-
     ) {
 
-
       const item =
-      code.substring(2).trim();
+      cleanItem(
+        code.substring(2)
+      );
 
-
-      if (item) {
-
-        lookupItem(item);
-
-      }
-
+      lookupItem(item);
 
       return;
-
     }
 
 
     showError(
-      "Scan Product QR"
+      "Scan Item QR"
     );
 
-
     return;
-
   }
 
 
 
-  /*
-    INVENTORY MODE - LOCATION
-  */
+  // LOCATION QR
 
   if (
-
     code.toUpperCase()
       .startsWith("L:")
-
   ) {
 
-
     const location =
-    code.substring(2).trim();
+    code.substring(2)
+      .trim();
 
 
     if (!location) {
-
       return;
-
     }
 
 
@@ -809,11 +1102,8 @@ function onScanSuccess(decodedText) {
 
 
     localStorage.setItem(
-
       "inventoryLocation",
-
       currentLocation
-
     );
 
 
@@ -821,47 +1111,31 @@ function onScanSuccess(decodedText) {
     currentLocation;
 
 
-    statusDisplay.className =
-    "success";
-
-
-    statusDisplay.innerText =
-
-    "✓ LOCATION " +
-
-    currentLocation;
+    setStatus(
+      "success",
+      "✓ LOCATION " +
+      currentLocation
+    );
 
 
     playLocationTone();
 
-
     return;
-
   }
 
 
 
-  /*
-    INVENTORY MODE - ITEM
-  */
+  // ITEM QR
 
   if (
-
     code.toUpperCase()
       .startsWith("I:")
-
   ) {
 
-
     const item =
-    code.substring(2).trim();
-
-
-    if (!item) {
-
-      return;
-
-    }
+    cleanItem(
+      code.substring(2)
+    );
 
 
     if (!currentLocation) {
@@ -871,45 +1145,46 @@ function onScanSuccess(decodedText) {
       );
 
       return;
-
     }
 
 
-    saveItem(item);
-
+    saveItem(
+      item,
+      "camera"
+    );
 
     return;
-
   }
 
 
   showError(
-    "Unknown QR: " + code
+    "Unknown QR"
   );
 
 }
 
 
 
-// ========================================
-// SAVE INVENTORY ITEM
-// ========================================
+// ==========================================
+// SAVE / MOVE
+// ==========================================
 
-function saveItem(item) {
+function saveItem(
+  item,
+  source
+) {
+
+  if (!item) {
+    return;
+  }
 
 
-  statusDisplay.className =
-  "";
-
-
-  statusDisplay.innerText =
-
-  "Saving Item #" +
-
-  item +
-
-  "...";
-
+  setStatus(
+    "",
+    "Checking Item #" +
+    item +
+    "..."
+  );
 
 
   jsonpRequest(
@@ -926,47 +1201,68 @@ function saveItem(item) {
 
       if (!data.success) {
 
-        showError(
-          data.message ||
-          "Item not found"
-        );
+        if (
+          data.errorType ===
+          "ITEM_NOT_FOUND"
+        ) {
+
+          showItemNotFound(
+            item
+          );
+
+        } else {
+
+          showError(
+            data.message ||
+            "Update failed"
+          );
+
+        }
 
         return;
-
       }
 
 
-      /*
-        CRITICAL PART:
 
-        Save BOTH old Location
-        AND old Quantity for UNDO.
-      */
+      const previousQuantity =
+      Number(
+        data.previousQuantity || 0
+      );
+
+
+      const newQuantity =
+      Number(
+        data.quantity || 1
+      );
+
+
 
       lastSuccessfulScan = {
 
         item:
-          item,
+          data.item || item,
 
         name:
           data.name || "",
 
+        price:
+          data.price,
+
+        action:
+          data.action,
+
         previousLocation:
           data.previousLocation || "",
-
-        previousQuantity:
-          Number(
-            data.previousQuantity || 1
-          ),
 
         newLocation:
           data.newLocation ||
           currentLocation,
 
+        previousQuantity:
+          previousQuantity,
+
         quantity:
-          Number(
-            data.quantity || 1
-          )
+          newQuantity
 
       };
 
@@ -975,25 +1271,44 @@ function saveItem(item) {
       false;
 
 
-      scannedCount++;
+
+      // SESSION STATS
+
+      totalScanCount++;
+
+      uniqueItemSet.add(
+        String(data.item || item)
+      );
 
 
-      counterDisplay.innerText =
-      scannedCount;
+      /*
+        FIRST and ADD create an
+        additional inventoried unit.
+
+        MOVE does not.
+      */
+
+      if (
+        data.action === "FIRST" ||
+        data.action === "ADD"
+      ) {
+
+        unitsAddedCount++;
+
+      }
 
 
-      lastItemDisplay.innerText =
-      "#" + item;
+      updateStats();
 
 
 
       showProductCard({
 
         item:
-          item,
+          data.item || item,
 
         name:
-          data.name || "",
+          data.name,
 
         price:
           data.price,
@@ -1003,57 +1318,147 @@ function saveItem(item) {
           currentLocation,
 
         quantity:
-          Number(
-            data.quantity || 1
-          )
+          newQuantity
 
       });
 
 
 
-      statusDisplay.className =
-      "success";
+      // ====================================
+      // LOCATION CHANGED
+      // ====================================
+
+      if (
+        data.action === "MOVE" ||
+        data.locationChanged === true
+      ) {
 
 
-      statusDisplay.innerHTML =
+        setStatus(
 
-      "✓ ITEM #" +
-      escapeHtml(item) +
+          "move",
 
-      "<br>" +
+          "⚠️ LOCATION CHANGED" +
 
-      "LOCATION " +
-      escapeHtml(
-        data.newLocation ||
-        currentLocation
-      ) +
+          "<br><br>" +
 
-      "<br>" +
+          "ITEM #" +
+          escapeHtml(
+            data.item || item
+          ) +
 
-      "QUANTITY: " +
-      Number(
-        data.quantity || 1
-      );
+          "<br>" +
+
+          escapeHtml(
+            data.name || ""
+          ) +
+
+          "<br><br>" +
+
+          "MOVED:" +
+
+          "<br>" +
+
+          "LOCATION " +
+          escapeHtml(
+            data.previousLocation
+          ) +
+
+          " → LOCATION " +
+          escapeHtml(
+            data.newLocation
+          ) +
+
+          "<br><br>" +
+
+          "QUANTITY: " +
+          newQuantity,
+
+          true
+        );
 
 
+        addHistory(
 
-      addHistory(
+          "↔ #" +
+          (data.item || item) +
 
-        "#" + item +
-        " → Location " +
-        (
-          data.newLocation ||
-          currentLocation
-        ) +
-        " | Qty " +
-        Number(
-          data.quantity || 1
-        )
+          " | " +
+          data.previousLocation +
 
-      );
+          " → " +
+          data.newLocation +
+
+          " | Qty " +
+          newQuantity
+
+        );
 
 
-      playSuccessTone();
+        playMoveTone();
+
+      }
+
+
+      // ====================================
+      // FIRST / ADD
+      // ====================================
+
+      else {
+
+
+        setStatus(
+
+          "success",
+
+          "✓ ITEM #" +
+          escapeHtml(
+            data.item || item
+          ) +
+
+          "<br>" +
+
+          escapeHtml(
+            data.name || ""
+          ) +
+
+          "<br>" +
+
+          "LOCATION " +
+          escapeHtml(
+            data.newLocation
+          ) +
+
+          "<br>" +
+
+          "QUANTITY: " +
+          newQuantity,
+
+          true
+        );
+
+
+        addHistory(
+
+          "+ #" +
+          (data.item || item) +
+
+          " | Location " +
+          data.newLocation +
+
+          " | Qty " +
+          newQuantity
+
+        );
+
+
+        playSuccessTone();
+
+      }
+
+
+      manualItem.value =
+      "";
 
     }
 
@@ -1063,25 +1468,28 @@ function saveItem(item) {
 
 
 
-// ========================================
-// PRODUCT LOOKUP - READ ONLY
-// ========================================
+// ==========================================
+// LOOKUP
+// ==========================================
 
 function lookupItem(item) {
 
+  if (!item) {
 
-  statusDisplay.className =
-  "lookup";
+    showError(
+      "Enter Item #"
+    );
+
+    return;
+  }
 
 
-  statusDisplay.innerText =
-
-  "Looking up Item #" +
-
-  item +
-
-  "...";
-
+  setStatus(
+    "lookupStatus",
+    "Looking up Item #" +
+    item +
+    "..."
+  );
 
 
   jsonpRequest(
@@ -1097,15 +1505,26 @@ function lookupItem(item) {
 
       if (!data.success) {
 
-        showError(
-          data.message ||
-          "Item not found"
-        );
+        if (
+          data.errorType ===
+          "ITEM_NOT_FOUND"
+        ) {
+
+          showItemNotFound(
+            item
+          );
+
+        } else {
+
+          showError(
+            data.message ||
+            "Lookup failed"
+          );
+
+        }
 
         return;
-
       }
-
 
 
       showProductCard({
@@ -1123,51 +1542,42 @@ function lookupItem(item) {
           data.location,
 
         quantity:
-          Number(
-            data.quantity || 1
-          )
+          data.quantity
 
       });
 
 
+      setStatus(
 
-      lastItemDisplay.innerText =
-      "#" + data.item;
+        "lookupStatus",
 
-
-
-      statusDisplay.className =
-      "lookup";
-
-
-      statusDisplay.innerHTML =
-
-      "🔍 ITEM #" +
-      escapeHtml(data.item) +
-
-      "<br>" +
-
-      "QUANTITY: " +
-      Number(
-        data.quantity || 1
-      );
-
-
-
-      addHistory(
-
-        "LOOKUP #" +
-        data.item +
-        " | Location " +
-        (
-          data.location ||
-          "—"
+        "🔍 ITEM #" +
+        escapeHtml(
+          data.item
         ) +
-        " | Qty " +
-        Number(
-          data.quantity || 1
-        )
 
+        "<br>" +
+
+        escapeHtml(
+          data.name || ""
+        ) +
+
+        "<br>" +
+
+        "LOCATION: " +
+        escapeHtml(
+          data.location ||
+          "Not assigned"
+        ) +
+
+        "<br>" +
+
+        "QUANTITY: " +
+        Number(
+          data.quantity || 0
+        ),
+
+        true
       );
 
 
@@ -1181,12 +1591,194 @@ function lookupItem(item) {
 
 
 
-// ========================================
+// ==========================================
+// SEARCH BY NAME
+// ==========================================
+
+function searchProductName() {
+
+  const query =
+  String(
+    nameSearch.value || ""
+  ).trim();
+
+
+  if (!query) {
+
+    showError(
+      "Enter product name"
+    );
+
+    return;
+  }
+
+
+  searchResults.style.display =
+  "block";
+
+
+  searchResults.innerHTML =
+  "Searching...";
+
+
+  jsonpRequest(
+
+    "search",
+
+    {
+      query: query
+    },
+
+    function(data) {
+
+
+      if (!data.success) {
+
+        showError(
+          data.message ||
+          "Search failed"
+        );
+
+        return;
+      }
+
+
+      renderSearchResults(
+        data.results || []
+      );
+
+    }
+
+  );
+
+}
+
+
+
+// ==========================================
+// SEARCH RESULTS
+// ==========================================
+
+function renderSearchResults(
+  results
+) {
+
+  searchResults.innerHTML =
+  "";
+
+
+  if (!results.length) {
+
+    searchResults.innerHTML =
+    "<strong>No products found</strong>";
+
+    playErrorTone();
+
+    return;
+  }
+
+
+  results.forEach(
+    function(product) {
+
+
+      const div =
+      document.createElement(
+        "div"
+      );
+
+
+      div.className =
+      "searchResult";
+
+
+      const name =
+      document.createElement(
+        "div"
+      );
+
+
+      name.className =
+      "searchName";
+
+
+      name.innerText =
+      product.name ||
+      "No name";
+
+
+      const details =
+      document.createElement(
+        "div"
+      );
+
+
+      details.className =
+      "searchDetails";
+
+
+      details.innerText =
+
+      "#" +
+      product.item +
+
+      " | Location: " +
+      (
+        product.location ||
+        "—"
+      ) +
+
+      " | Qty: " +
+      Number(
+        product.quantity || 0
+      );
+
+
+      div.appendChild(
+        name
+      );
+
+
+      div.appendChild(
+        details
+      );
+
+
+      div.addEventListener(
+        "click",
+        function() {
+
+
+          lookupItem(
+            product.item
+          );
+
+
+          manualItem.value =
+          product.item;
+
+        }
+      );
+
+
+      searchResults.appendChild(
+        div
+      );
+
+    }
+  );
+
+}
+
+
+
+// ==========================================
 // PRODUCT CARD
-// ========================================
+// ==========================================
 
-function showProductCard(data) {
-
+function showProductCard(
+  data
+) {
 
   productCard.style.display =
   "block";
@@ -1202,31 +1794,23 @@ function showProductCard(data) {
   "—";
 
 
-  /*
-    PRICE
-
-    If J contains a number,
-    show it as dollars.
-  */
-
   if (
-
     data.price !== "" &&
     data.price !== null &&
     data.price !== undefined
-
   ) {
 
+    const price =
+    Number(
+      data.price
+    );
 
-    const numericPrice =
-    Number(data.price);
 
-
-    if (!isNaN(numericPrice)) {
+    if (!isNaN(price)) {
 
       productPrice.innerText =
       "$" +
-      numericPrice.toFixed(2);
+      price.toFixed(2);
 
     } else {
 
@@ -1234,7 +1818,6 @@ function showProductCard(data) {
       data.price;
 
     }
-
 
   } else {
 
@@ -1250,23 +1833,22 @@ function showProductCard(data) {
 
 
   productQuantity.innerText =
-  data.quantity || 1;
+  Number(
+    data.quantity || 0
+  );
 
 }
 
 
 
-// ========================================
+// ==========================================
 // UNDO
-// ========================================
+// ==========================================
 
 function undoLastItem() {
 
-
   if (!lastSuccessfulScan) {
-
     return;
-
   }
 
 
@@ -1274,26 +1856,16 @@ function undoLastItem() {
   lastSuccessfulScan;
 
 
-  /*
-    Prevent double tap.
-  */
-
   undoButton.disabled =
   true;
 
 
-  statusDisplay.className =
-  "";
-
-
-  statusDisplay.innerText =
-
-  "Undoing Item #" +
-
-  undoData.item +
-
-  "...";
-
+  setStatus(
+    "",
+    "Undoing Item #" +
+    undoData.item +
+    "..."
+  );
 
 
   jsonpRequest(
@@ -1308,13 +1880,6 @@ function undoLastItem() {
       previousLocation:
         undoData.previousLocation,
 
-      /*
-        THIS WAS MISSING BEFORE.
-
-        Server now receives the exact
-        quantity from before the scan.
-      */
-
       previousQuantity:
         undoData.previousQuantity
 
@@ -1325,7 +1890,6 @@ function undoLastItem() {
 
       if (!data.success) {
 
-
         showError(
           data.message ||
           "Undo failed"
@@ -1335,57 +1899,41 @@ function undoLastItem() {
         undoButton.disabled =
         false;
 
-
         return;
-
       }
-
-
-
-      if (scannedCount > 0) {
-
-        scannedCount--;
-
-      }
-
-
-      counterDisplay.innerText =
-      scannedCount;
-
-
-
-      statusDisplay.className =
-      "undo";
-
-
-      statusDisplay.innerHTML =
-
-      "↶ ITEM #" +
-      escapeHtml(
-        undoData.item
-      ) +
-
-      "<br>" +
-
-      "LOCATION: " +
-      escapeHtml(
-        undoData.previousLocation ||
-        "BLANK"
-      ) +
-
-      "<br>" +
-
-      "QUANTITY: " +
-      Number(
-        undoData.previousQuantity
-      );
 
 
 
       /*
-        Show restored values
-        in product card.
+        Adjust session counters.
       */
+
+      if (totalScanCount > 0) {
+
+        totalScanCount--;
+
+      }
+
+
+      if (
+        undoData.action === "FIRST" ||
+        undoData.action === "ADD"
+      ) {
+
+        if (
+          unitsAddedCount > 0
+        ) {
+
+          unitsAddedCount--;
+
+        }
+
+      }
+
+
+      updateStats();
+
+
 
       showProductCard({
 
@@ -1396,37 +1944,126 @@ function undoLastItem() {
           undoData.name,
 
         price:
-          "",
+          undoData.price,
 
         location:
-          undoData.previousLocation,
+          data.restoredLocation,
 
         quantity:
-          undoData.previousQuantity
+          data.restoredQuantity
 
       });
 
 
 
-      addHistory(
+      if (
+        undoData.action === "MOVE"
+      ) {
 
-        "UNDO #" +
-        undoData.item +
-        " → Location " +
-        (
-          undoData.previousLocation ||
-          "blank"
-        ) +
-        " | Qty " +
-        undoData.previousQuantity
+        setStatus(
 
-      );
+          "undo",
+
+          "↶ MOVE UNDONE" +
+
+          "<br><br>" +
+
+          "ITEM #" +
+          escapeHtml(
+            undoData.item
+          ) +
+
+          "<br>" +
+
+          "LOCATION " +
+          escapeHtml(
+            undoData.newLocation
+          ) +
+
+          " → LOCATION " +
+          escapeHtml(
+            data.restoredLocation
+          ) +
+
+          "<br>" +
+
+          "QUANTITY: " +
+          Number(
+            data.restoredQuantity || 0
+          ),
+
+          true
+        );
+
+
+        addHistory(
+
+          "↶ #" +
+          undoData.item +
+
+          " | " +
+          undoData.newLocation +
+
+          " → " +
+          (
+            data.restoredLocation ||
+            "blank"
+          )
+
+        );
+
+      } else {
+
+        setStatus(
+
+          "undo",
+
+          "↶ UNDO SUCCESSFUL" +
+
+          "<br>" +
+
+          "ITEM #" +
+          escapeHtml(
+            undoData.item
+          ) +
+
+          "<br>" +
+
+          "LOCATION: " +
+          escapeHtml(
+            data.restoredLocation ||
+            "BLANK"
+          ) +
+
+          "<br>" +
+
+          "QUANTITY: " +
+          Number(
+            data.restoredQuantity || 0
+          ),
+
+          true
+        );
+
+
+        addHistory(
+
+          "↶ #" +
+          undoData.item +
+
+          " | Qty " +
+          Number(
+            data.restoredQuantity || 0
+          )
+
+        );
+
+      }
 
 
 
       /*
-        Allow this QR to be scanned
-        again immediately after UNDO.
+        Permit immediate re-scan.
       */
 
       recentScans.delete(
@@ -1439,10 +2076,6 @@ function undoLastItem() {
       null;
 
 
-      lastItemDisplay.innerText =
-      "—";
-
-
       playUndoTone();
 
     }
@@ -1453,218 +2086,93 @@ function undoLastItem() {
 
 
 
-// ========================================
-// JSONP REQUEST
-// ========================================
+// ==========================================
+// ITEM NOT FOUND
+// ==========================================
 
-function jsonpRequest(
-  action,
-  parameters,
-  callback
+function showItemNotFound(
+  item
 ) {
 
+  productCard.style.display =
+  "none";
 
-  const callbackName =
 
-  "inventoryCallback_" +
+  setStatus(
 
-  Date.now() +
+    "notFound",
 
-  "_" +
+    "❌ ITEM NOT FOUND" +
 
-  Math.floor(
-    Math.random() * 100000
+    "<br><br>" +
+
+    "#" +
+    escapeHtml(item),
+
+    true
   );
 
 
-  const script =
-  document.createElement(
-    "script"
-  );
-
-
-  let finished =
-  false;
-
-
-
-  window[callbackName] =
-  function(data) {
-
-
-    if (finished) {
-
-      return;
-
-    }
-
-
-    finished =
-    true;
-
-
-    cleanup();
-
-
-    callback(data);
-
-  };
-
-
-
-  let url =
-
-  API_URL +
-
-  "?action=" +
-
-  encodeURIComponent(action);
-
-
-
-  for (
-
-    const key in parameters
-
-  ) {
-
-
-    url +=
-
-    "&" +
-
-    encodeURIComponent(key) +
-
-    "=" +
-
-    encodeURIComponent(
-      parameters[key]
-    );
-
-  }
-
-
-
-  url +=
-
-  "&callback=" +
-
-  encodeURIComponent(
-    callbackName
-  ) +
-
-  "&t=" +
-
-  Date.now();
-
-
-
-  script.onerror =
-  function() {
-
-
-    if (finished) {
-
-      return;
-
-    }
-
-
-    finished =
-    true;
-
-
-    cleanup();
-
-
-    showError(
-      "Could not reach server"
-    );
-
-  };
-
-
-
-  script.src =
-  url;
-
-
-  document.body.appendChild(
-    script
-  );
-
-
-
-  setTimeout(
-    function() {
-
-
-      if (finished) {
-
-        return;
-
-      }
-
-
-      finished =
-      true;
-
-
-      cleanup();
-
-
-      showError(
-        "Server timeout"
-      );
-
-
-    },
-    10000
-  );
-
-
-
-  function cleanup() {
-
-
-    if (script.parentNode) {
-
-      script.parentNode
-        .removeChild(script);
-
-    }
-
-
-    try {
-
-      delete window[
-        callbackName
-      ];
-
-    } catch(e) {}
-
-  }
+  playNotFoundTone();
 
 }
 
 
 
-// ========================================
+// ==========================================
+// SESSION STATS
+// ==========================================
+
+function updateStats() {
+
+  totalScansDisplay.innerText =
+  totalScanCount;
+
+
+  uniqueItemsDisplay.innerText =
+  uniqueItemSet.size;
+
+
+  totalUnitsDisplay.innerText =
+  unitsAddedCount;
+
+}
+
+
+
+// ==========================================
 // HISTORY
-// ========================================
+// ==========================================
 
 function addHistory(text) {
 
+  const time =
+  new Date()
+    .toLocaleTimeString(
+      [],
+      {
+        hour:
+          "2-digit",
 
-  scanHistory.unshift(text);
+        minute:
+          "2-digit"
+      }
+    );
+
+
+  history.unshift(
+    time +
+    " — " +
+    text
+  );
 
 
   if (
-    scanHistory.length > 10
+    history.length > 10
   ) {
 
-    scanHistory =
-    scanHistory.slice(
+    history =
+    history.slice(
       0,
       10
     );
@@ -1677,27 +2185,22 @@ function addHistory(text) {
 }
 
 
-
 function renderHistory() {
-
 
   historyList.innerHTML =
   "";
 
 
-  if (
-    scanHistory.length === 0
-  ) {
+  if (!history.length) {
 
     historyList.innerText =
-    "No scans yet";
+    "No activity yet";
 
     return;
-
   }
 
 
-  scanHistory.forEach(
+  history.forEach(
     function(text) {
 
 
@@ -1726,12 +2229,11 @@ function renderHistory() {
 
 
 
-// ========================================
+// ==========================================
 // CLEAR LOCATION
-// ========================================
+// ==========================================
 
 function clearLocation() {
-
 
   currentLocation =
   "";
@@ -1746,44 +2248,273 @@ function clearLocation() {
   "Not selected";
 
 
-  statusDisplay.className =
-  "";
-
-
-  statusDisplay.innerText =
-  "Scan Location QR first";
-
-
   recentScans.clear();
 
 
-  lastSuccessfulScan =
-  null;
-
-
-  undoButton.disabled =
-  true;
+  setStatus(
+    "",
+    "Scan Location QR first"
+  );
 
 }
 
 
 
-// ========================================
-// ERROR
-// ========================================
+// ==========================================
+// JSONP
+// ==========================================
+
+function jsonpRequest(
+  action,
+  parameters,
+  callback
+) {
+
+  const callbackName =
+
+  "inventoryCallback_" +
+
+  Date.now() +
+
+  "_" +
+
+  Math.floor(
+    Math.random() *
+    100000
+  );
+
+
+  const script =
+  document.createElement(
+    "script"
+  );
+
+
+  let finished =
+  false;
+
+
+  window[callbackName] =
+  function(data) {
+
+    if (finished) {
+      return;
+    }
+
+
+    finished =
+    true;
+
+
+    cleanup();
+
+
+    callback(data);
+
+  };
+
+
+  let url =
+
+  API_URL +
+
+  "?action=" +
+
+  encodeURIComponent(
+    action
+  );
+
+
+  for (
+    const key in parameters
+  ) {
+
+    url +=
+
+    "&" +
+
+    encodeURIComponent(
+      key
+    ) +
+
+    "=" +
+
+    encodeURIComponent(
+      parameters[key]
+    );
+
+  }
+
+
+  url +=
+
+  "&callback=" +
+
+  encodeURIComponent(
+    callbackName
+  ) +
+
+  "&t=" +
+
+  Date.now();
+
+
+  script.onerror =
+  function() {
+
+    if (finished) {
+      return;
+    }
+
+
+    finished =
+    true;
+
+
+    cleanup();
+
+
+    showError(
+      "Could not reach server"
+    );
+
+  };
+
+
+  script.src =
+  url;
+
+
+  document.body.appendChild(
+    script
+  );
+
+
+  setTimeout(
+    function() {
+
+      if (finished) {
+        return;
+      }
+
+
+      finished =
+      true;
+
+
+      cleanup();
+
+
+      showError(
+        "Server timeout"
+      );
+
+    },
+    10000
+  );
+
+
+  function cleanup() {
+
+    if (
+      script.parentNode
+    ) {
+
+      script.parentNode
+        .removeChild(
+          script
+        );
+
+    }
+
+
+    try {
+
+      delete window[
+        callbackName
+      ];
+
+    } catch(e) {}
+
+  }
+
+}
+
+
+
+// ==========================================
+// HELPERS
+// ==========================================
+
+function cleanItem(value) {
+
+  return String(
+    value || ""
+  )
+    .replace("#", "")
+    .replace(/^I:/i, "")
+    .trim();
+
+}
+
+
+function cleanRecentScans(now) {
+
+  for (
+    const [
+      code,
+      time
+    ] of recentScans
+  ) {
+
+    if (
+      now - time >
+      SAME_QR_LOCK_TIME
+    ) {
+
+      recentScans.delete(
+        code
+      );
+
+    }
+
+  }
+
+}
+
+
+function setStatus(
+  className,
+  content,
+  allowHtml
+) {
+
+  statusDisplay.className =
+  className || "";
+
+
+  if (allowHtml) {
+
+    statusDisplay.innerHTML =
+    content;
+
+  } else {
+
+    statusDisplay.innerText =
+    content;
+
+  }
+
+}
+
 
 function showError(message) {
 
-
-  statusDisplay.className =
-  "error";
-
-
-  statusDisplay.innerText =
-
-  "ERROR: " +
-
-  message;
+  setStatus(
+    "error",
+    "ERROR: " +
+    message
+  );
 
 
   playErrorTone();
@@ -1791,24 +2522,60 @@ function showError(message) {
 }
 
 
+function escapeHtml(value) {
 
-// ========================================
+  return String(
+    value == null
+      ? ""
+      : value
+  )
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+
+// ==========================================
 // AUDIO
-// ========================================
+// ==========================================
 
-function playTone(
-  frequency,
-  duration,
-  volume
-) {
-
+function unlockAudio() {
 
   try {
+
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
 
 
     if (!audioContext) {
 
-      return;
+      audioContext =
+      new AudioContext();
 
     }
 
@@ -1824,14 +2591,80 @@ function playTone(
 
 
     const oscillator =
-    audioContext.createOscillator();
+      audioContext
+        .createOscillator();
 
 
     const gain =
-    audioContext.createGain();
+      audioContext
+        .createGain();
 
 
-    oscillator.connect(gain);
+    gain.gain.value =
+    0.0001;
+
+
+    oscillator.connect(
+      gain
+    );
+
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.start();
+
+
+    oscillator.stop(
+      audioContext.currentTime +
+      0.05
+    );
+
+
+  } catch(e) {}
+
+}
+
+
+function playTone(
+  frequency,
+  duration,
+  volume
+) {
+
+  try {
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    if (
+      audioContext.state ===
+      "suspended"
+    ) {
+
+      audioContext.resume();
+
+    }
+
+
+    const oscillator =
+      audioContext
+        .createOscillator();
+
+
+    const gain =
+      audioContext
+        .createGain();
+
+
+    oscillator.connect(
+      gain
+    );
+
 
     gain.connect(
       audioContext.destination
@@ -1882,7 +2715,6 @@ function playTone(
 }
 
 
-
 function playLocationTone() {
 
   playTone(
@@ -1894,13 +2726,11 @@ function playLocationTone() {
 }
 
 
-
 function playSuccessTone() {
-
 
   playTone(
     850,
-    120,
+    110,
     0.35
   );
 
@@ -1910,16 +2740,65 @@ function playSuccessTone() {
 
       playTone(
         1150,
-        160,
+        150,
         0.35
       );
 
     },
-    130
+    125
   );
 
 }
 
+
+function playMoveTone() {
+
+  playTone(
+    950,
+    150,
+    0.4
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        600,
+        180,
+        0.4
+      );
+
+    },
+    170
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        950,
+        180,
+        0.4
+      );
+
+    },
+    360
+  );
+
+}
+
+
+function playLookupTone() {
+
+  playTone(
+    750,
+    100,
+    0.25
+  );
+
+}
 
 
 function playErrorTone() {
@@ -1933,9 +2812,46 @@ function playErrorTone() {
 }
 
 
+function playNotFoundTone() {
+
+  playTone(
+    180,
+    250,
+    0.5
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        180,
+        250,
+        0.5
+      );
+
+    },
+    300
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        180,
+        400,
+        0.5
+      );
+
+    },
+    600
+  );
+
+}
+
 
 function playUndoTone() {
-
 
   playTone(
     700,
@@ -1960,57 +2876,7 @@ function playUndoTone() {
 }
 
 
-
-function playLookupTone() {
-
-  playTone(
-    750,
-    100,
-    0.25
-  );
-
-}
-
-
-
-// ========================================
-// SAFETY FOR HTML DISPLAY
-// ========================================
-
-function escapeHtml(value) {
-
-  return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
 </script>
 
 </body>
-
 </html>
