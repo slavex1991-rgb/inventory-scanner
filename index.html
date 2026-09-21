@@ -309,33 +309,91 @@ function onScanSuccess(decodedText) {
 function saveItem(item) {
 
   statusDisplay.innerText =
-    "Saving Item #" +
-    item +
-    "...";
+    "Saving Item #" + item + "...";
+
+  const callbackName =
+    "inventoryCallback_" + Date.now();
+
+  const script =
+    document.createElement("script");
+
+  const url =
+    API_URL +
+    "?action=update" +
+    "&item=" + encodeURIComponent(item) +
+    "&location=" + encodeURIComponent(currentLocation) +
+    "&callback=" + encodeURIComponent(callbackName);
 
 
-  fetch(API_URL, {
+  let finished = false;
 
-    method: "POST",
 
-    mode: "no-cors",
+  window[callbackName] = function(data) {
 
-    headers: {
-      "Content-Type":
-        "text/plain;charset=utf-8"
-    },
+    finished = true;
 
-    body: JSON.stringify({
+    if (data.success) {
 
-      item: item,
+      statusDisplay.innerText =
+        "✓ Item #" +
+        item +
+        " → Location " +
+        currentLocation;
 
-      location:
-        currentLocation
+      vibrate();
 
-    })
+    } else {
 
-  })
+      statusDisplay.innerText =
+        "ERROR: " + data.message;
+    }
 
+
+    cleanup();
+  };
+
+
+  script.onerror = function() {
+
+    if (!finished) {
+
+      statusDisplay.innerText =
+        "ERROR: Could not reach server";
+    }
+
+    cleanup();
+  };
+
+
+  script.src = url;
+
+  document.body.appendChild(script);
+
+
+  setTimeout(function() {
+
+    if (!finished) {
+
+      statusDisplay.innerText =
+        "ERROR: Server timeout";
+
+      cleanup();
+    }
+
+  }, 10000);
+
+
+  function cleanup() {
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+    try {
+      delete window[callbackName];
+    } catch (e) {}
+  }
+}
   .then(function () {
 
     statusDisplay.innerText =
