@@ -1,795 +1,1760 @@
-const SPREADSHEET_ID = "1atBf7rc9E_NqLBz7zOpkVQbmIsVXMrZU";
-const SHEET_NAME = "Sheet1";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Inventory Scanner</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  max-width: 650px;
+  margin: auto;
+  padding: 14px;
+  text-align: center;
+  background: #f3f4f6;
+  color: #111;
+}
+
+h1 {
+  margin: 8px 0 15px;
+  font-size: 28px;
+}
+
+.box {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+#modeDisplay {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#location {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.modeButtons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modeButtons button {
+  margin: 0;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 9px;
+  font-size: 17px;
+  font-weight: bold;
+  border: 0;
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+#inventoryButton {
+  background: #1677ff;
+  color: white;
+}
+
+#lookupButton {
+  background: #6f42c1;
+  color: white;
+}
+
+#startButton {
+  background: #111827;
+  color: white;
+}
+
+#undoButton {
+  background: #ff9800;
+  color: white;
+}
+
+#undoButton:disabled {
+  background: #d1d5db;
+  color: #777;
+}
+
+#clearButton {
+  background: #e5e7eb;
+  color: #111;
+}
+
+#reader {
+  width: 100%;
+  background: white;
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#status {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+  font-size: 20px;
+  min-height: 30px;
+  line-height: 1.45;
+}
+
+.success {
+  background: #22c55e !important;
+  color: white !important;
+}
+
+.move {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+.error {
+  background: #dc2626 !important;
+  color: white !important;
+}
+
+.lookupStatus {
+  background: #6f42c1 !important;
+  color: white !important;
+}
+
+.undo {
+  background: #f97316 !important;
+  color: white !important;
+}
+
+.notFound {
+  background: #b91c1c !important;
+  color: white !important;
+  font-size: 27px !important;
+  font-weight: bold;
+  padding: 28px 15px !important;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 5px;
+}
+
+.statNumber {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.inputBox {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 12px;
+}
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #bbb;
+  border-radius: 9px;
+  font-size: 18px;
+  margin-top: 7px;
+}
+
+.inputButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.inputButtons button {
+  flex: 1;
+}
+
+#manualScanButton {
+  background: #1677ff;
+  color: white;
+}
+
+#manualLookupButton {
+  background: #6f42c1;
+  color: white;
+}
+
+#searchNameButton {
+  background: #374151;
+  color: white;
+}
+
+#productCard {
+  display: none;
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+#productName {
+  font-size: 23px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.productRow {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 18px;
+}
+
+#productQuantity {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+#searchResults {
+  display: none;
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.searchResult {
+  padding: 13px 8px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.searchResult:last-child {
+  border-bottom: 0;
+}
+
+.searchName {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.searchDetails {
+  color: #555;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+#historyBox {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.historyItem {
+  padding: 9px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+.small {
+  font-size: 13px;
+  color: #666;
+}
+
+</style>
+
+</head>
+
+<body>
 
 
-// COLUMNS
-const COL_NAME = 1;       // A
-const COL_ITEM = 9;       // I
-const COL_PRICE = 10;     // J
-const COL_LOCATION = 11;  // K
-const COL_QUANTITY = 15;  // O
+<h1>Inventory Scanner</h1>
 
-// Hidden technical sheet used to make every scan exactly-once.
-const TX_SHEET_NAME = "_InventoryTransactions";
 
+<div class="box">
+
+  <div class="label">
+    Mode
+  </div>
+
+  <div id="modeDisplay">
+    INVENTORY / MOVE
+  </div>
+
+</div>
+
+
+<div class="modeButtons">
+
+  <button id="inventoryButton">
+    📦 INVENTORY
+  </button>
+
+  <button id="lookupButton">
+    🔍 LOOKUP
+  </button>
+
+</div>
+
+
+<div class="box">
+
+  <div class="label">
+    Current Location
+  </div>
+
+  <div id="location">
+    Not selected
+  </div>
+
+</div>
+
+
+<div class="stats">
+
+  <div class="stat">
+
+    <div
+      class="statNumber"
+      id="totalScans"
+    >
+      0
+    </div>
+
+    <div class="statLabel">
+      TOTAL SCANS
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div
+      class="statNumber"
+      id="uniqueItems"
+    >
+      0
+    </div>
+
+    <div class="statLabel">
+      UNIQUE ITEMS
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div
+      class="statNumber"
+      id="totalUnits"
+    >
+      0
+    </div>
+
+    <div class="statLabel">
+      UNITS ADDED
+    </div>
+
+  </div>
+
+</div>
+
+
+<button id="startButton">
+  START SCANNER
+</button>
+
+
+<div id="reader"></div>
+
+
+<div id="status">
+  Scan Location QR first
+</div>
+
+
+<!-- MANUAL ITEM -->
+
+<div class="inputBox">
+
+  <div class="label">
+    Manual Item #
+  </div>
+
+  <input
+    id="manualItem"
+    type="text"
+    inputmode="numeric"
+    placeholder="Example: 5067"
+  >
+
+  <div class="inputButtons">
+
+    <button id="manualScanButton">
+      ADD / MOVE
+    </button>
+
+    <button id="manualLookupButton">
+      LOOKUP
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- NAME SEARCH -->
+
+<div class="inputBox">
+
+  <div class="label">
+    Search Product Name
+  </div>
+
+  <input
+    id="nameSearch"
+    type="text"
+    placeholder="Example: Tacoma"
+  >
+
+  <button id="searchNameButton">
+    SEARCH BY NAME
+  </button>
+
+</div>
+
+
+<div id="searchResults"></div>
+
+
+<!-- PRODUCT CARD -->
+
+<div id="productCard">
+
+  <div id="productName">
+    —
+  </div>
+
+  <div class="productRow">
+    Item #:
+    <span id="productItem">—</span>
+  </div>
+
+  <div class="productRow">
+    Price:
+    <span id="productPrice">—</span>
+  </div>
+
+  <div class="productRow">
+    Location:
+    <span id="productLocation">—</span>
+  </div>
+
+  <div class="productRow">
+    Quantity:
+    <span id="productQuantity">—</span>
+  </div>
+
+</div>
+
+
+<button
+  id="undoButton"
+  disabled
+>
+  ↶ UNDO LAST ITEM
+</button>
+
+
+<button id="clearButton">
+  CLEAR LOCATION
+</button>
+
+
+<div id="historyBox">
+
+  <strong>
+    Recent Activity
+  </strong>
+
+  <div
+    id="historyList"
+    class="small"
+  >
+    No activity yet
+  </div>
+
+</div>
+
+
+<script>
+
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
+
+
+const SAME_QR_LOCK_TIME =
+8000;
+
+
+let currentLocation =
+localStorage.getItem(
+  "inventoryLocation"
+) || "";
+
+
+let currentMode =
+"inventory";
+
+
+let scanner =
+null;
+
+
+let scannerStarted =
+false;
+
+
+let audioContext =
+null;
+
+
+let lastSuccessfulScan =
+null;
+
+
+let totalScanCount =
+0;
+
+
+let unitsAddedCount =
+0;
+
+
+let uniqueItemSet =
+new Set();
+
+
+let history =
+[];
+
+
+const recentScans =
+new Map();
+
+let inventoryOperationInProgress = false;
 
 
 
 // ==========================================
-// GET SHEET
+// ELEMENTS
 // ==========================================
 
-function getSheet() {
+const locationDisplay =
+document.getElementById(
+  "location"
+);
 
-  const ss =
-    SpreadsheetApp.openById(
-      SPREADSHEET_ID
-    );
+const modeDisplay =
+document.getElementById(
+  "modeDisplay"
+);
 
-  const sheet =
-    ss.getSheetByName(
-      SHEET_NAME
-    );
+const statusDisplay =
+document.getElementById(
+  "status"
+);
 
-  if (!sheet) {
+const startButton =
+document.getElementById(
+  "startButton"
+);
 
-    throw new Error(
-      "Sheet not found"
-    );
+const inventoryButton =
+document.getElementById(
+  "inventoryButton"
+);
 
-  }
+const lookupButton =
+document.getElementById(
+  "lookupButton"
+);
 
-  return sheet;
+const undoButton =
+document.getElementById(
+  "undoButton"
+);
+
+const clearButton =
+document.getElementById(
+  "clearButton"
+);
+
+const manualItem =
+document.getElementById(
+  "manualItem"
+);
+
+const manualScanButton =
+document.getElementById(
+  "manualScanButton"
+);
+
+const manualLookupButton =
+document.getElementById(
+  "manualLookupButton"
+);
+
+const nameSearch =
+document.getElementById(
+  "nameSearch"
+);
+
+const searchNameButton =
+document.getElementById(
+  "searchNameButton"
+);
+
+const searchResults =
+document.getElementById(
+  "searchResults"
+);
+
+const productCard =
+document.getElementById(
+  "productCard"
+);
+
+const productName =
+document.getElementById(
+  "productName"
+);
+
+const productItem =
+document.getElementById(
+  "productItem"
+);
+
+const productPrice =
+document.getElementById(
+  "productPrice"
+);
+
+const productLocation =
+document.getElementById(
+  "productLocation"
+);
+
+const productQuantity =
+document.getElementById(
+  "productQuantity"
+);
+
+const totalScansDisplay =
+document.getElementById(
+  "totalScans"
+);
+
+const uniqueItemsDisplay =
+document.getElementById(
+  "uniqueItems"
+);
+
+const totalUnitsDisplay =
+document.getElementById(
+  "totalUnits"
+);
+
+const historyList =
+document.getElementById(
+  "historyList"
+);
+
+
+
+// ==========================================
+// INITIAL STATE
+// ==========================================
+
+if (currentLocation) {
+
+  locationDisplay.innerText =
+  currentLocation;
+
+  statusDisplay.innerText =
+  "Ready. Scan Item QR.";
+
 }
 
 
 
 // ==========================================
-// NORMALIZE ITEM ID
+// BUTTONS
 // ==========================================
 
-function normalizeItem(value) {
+inventoryButton.addEventListener(
+  "click",
+  function() {
 
-  return String(value || "")
-    .replace("#", "")
-    .trim();
+    currentMode =
+    "inventory";
 
-}
+    modeDisplay.innerText =
+    "INVENTORY / MOVE";
 
+    recentScans.clear();
 
-
-// ==========================================
-// FIND ITEM
-// ==========================================
-
-function findItem(itemID) {
-
-  const sheet =
-    getSheet();
-
-  const data =
-    sheet.getDataRange()
-      .getValues();
-
-  const item =
-    normalizeItem(itemID);
+    searchResults.style.display =
+    "none";
 
 
-  for (
-    let i = 0;
-    i < data.length;
-    i++
-  ) {
+    if (currentLocation) {
 
-    const sheetItem =
-      normalizeItem(
-        data[i][COL_ITEM - 1]
+      setStatus(
+        "",
+        "Ready. Scan Item QR."
       );
 
+    } else {
 
-    if (
-      sheetItem === item &&
-      item !== ""
-    ) {
-
-      return {
-
-        found: true,
-
-        sheet: sheet,
-
-        row: i + 1,
-
-        data: data[i]
-
-      };
+      setStatus(
+        "",
+        "Scan Location QR first"
+      );
 
     }
 
   }
+);
 
 
-  return {
-    found: false
-  };
+lookupButton.addEventListener(
+  "click",
+  function() {
+
+    currentMode =
+    "lookup";
+
+    modeDisplay.innerText =
+    "PRODUCT LOOKUP";
+
+    recentScans.clear();
+
+    setStatus(
+      "lookupStatus",
+      "Scan Product QR"
+    );
+
+  }
+);
+
+
+startButton.addEventListener(
+  "click",
+  startScanner
+);
+
+
+undoButton.addEventListener(
+  "click",
+  undoLastItem
+);
+
+
+clearButton.addEventListener(
+  "click",
+  clearLocation
+);
+
+
+manualScanButton.addEventListener(
+  "click",
+  function() {
+
+    const item =
+    cleanItem(
+      manualItem.value
+    );
+
+
+    if (!item) {
+
+      showError(
+        "Enter Item #"
+      );
+
+      return;
+
+    }
+
+
+    if (!currentLocation) {
+
+      showError(
+        "Select Location first"
+      );
+
+      return;
+
+    }
+
+
+    saveItem(
+      item,
+      "manual"
+    );
+
+  }
+);
+
+
+manualLookupButton.addEventListener(
+  "click",
+  function() {
+
+    const item =
+    cleanItem(
+      manualItem.value
+    );
+
+
+    if (!item) {
+
+      showError(
+        "Enter Item #"
+      );
+
+      return;
+
+    }
+
+
+    lookupItem(item);
+
+  }
+);
+
+
+searchNameButton.addEventListener(
+  "click",
+  searchProductName
+);
+
+
+manualItem.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      lookupItem(
+        cleanItem(
+          manualItem.value
+        )
+      );
+
+    }
+
+  }
+);
+
+
+nameSearch.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      searchProductName();
+
+    }
+
+  }
+);
+
+
+
+// ==========================================
+// CAMERA
+// ==========================================
+
+function startScanner() {
+
+  if (scannerStarted) {
+    return;
+  }
+
+
+  unlockAudio();
+
+
+  setStatus(
+    "",
+    "Starting camera..."
+  );
+
+
+  scanner =
+  new Html5Qrcode(
+    "reader"
+  );
+
+
+  scanner.start(
+
+    {
+      facingMode:
+        "environment"
+    },
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+
+    onScanSuccess,
+
+    function() {}
+
+  )
+
+  .then(function() {
+
+    scannerStarted =
+    true;
+
+    startButton.style.display =
+    "none";
+
+
+    if (
+      currentMode === "lookup"
+    ) {
+
+      setStatus(
+        "lookupStatus",
+        "Scan Product QR"
+      );
+
+    } else if (
+      currentLocation
+    ) {
+
+      setStatus(
+        "",
+        "Ready. Scan Item QR."
+      );
+
+    } else {
+
+      setStatus(
+        "",
+        "Scan Location QR first"
+      );
+
+    }
+
+  })
+
+  .catch(function(error) {
+
+    showError(
+      "Camera error: " +
+      error
+    );
+
+  });
 
 }
 
 
 
 // ==========================================
-// READ QUANTITY
-//
-// IMPORTANT:
-// If item already has a Location and
-// O is blank, actual Quantity = 1.
-//
-// If Location is blank, item has not
-// yet been inventoried.
+// QR SCAN
 // ==========================================
 
-function readQuantity(
-  location,
-  quantityValue
+function onScanSuccess(
+  decodedText
 ) {
 
-  const loc =
-    String(location || "")
+  if (
+    inventoryOperationInProgress &&
+    currentMode === "inventory"
+  ) {
+    return;
+  }
+
+
+  const code =
+  String(decodedText || "")
+    .trim();
+
+
+  const now =
+  Date.now();
+
+
+  const previous =
+  recentScans.get(code) || 0;
+
+
+  if (
+    now - previous <
+    SAME_QR_LOCK_TIME
+  ) {
+
+    return;
+
+  }
+
+
+  recentScans.set(
+    code,
+    now
+  );
+
+
+  cleanRecentScans(now);
+
+
+
+  // LOOKUP MODE
+
+  if (
+    currentMode === "lookup"
+  ) {
+
+    if (
+      code.toUpperCase()
+        .startsWith("I:")
+    ) {
+
+      const item =
+      cleanItem(
+        code.substring(2)
+      );
+
+      lookupItem(item);
+
+      return;
+    }
+
+
+    showError(
+      "Scan Item QR"
+    );
+
+    return;
+  }
+
+
+
+  // LOCATION QR
+
+  if (
+    code.toUpperCase()
+      .startsWith("L:")
+  ) {
+
+    const location =
+    code.substring(2)
       .trim();
 
 
-  if (!loc) {
+    if (!location) {
+      return;
+    }
 
-    return 0;
 
+    currentLocation =
+    location;
+
+
+    localStorage.setItem(
+      "inventoryLocation",
+      currentLocation
+    );
+
+
+    locationDisplay.innerText =
+    currentLocation;
+
+
+    setStatus(
+      "success",
+      "✓ LOCATION " +
+      currentLocation
+    );
+
+
+    playLocationTone();
+
+    return;
   }
 
+
+
+  // ITEM QR
 
   if (
-    quantityValue === "" ||
-    quantityValue === null
+    code.toUpperCase()
+      .startsWith("I:")
   ) {
 
-    return 1;
-
-  }
-
-
-  const quantity =
-    Number(quantityValue);
-
-
-  if (
-    isNaN(quantity) ||
-    quantity < 1
-  ) {
-
-    return 1;
-
-  }
-
-
-  return quantity;
-
-}
-
-
-
-// ==========================================
-// WRITE QUANTITY
-//
-// 0 = blank
-// 1 = blank
-// 2+ = actual number
-// ==========================================
-
-function writeQuantity(
-  sheet,
-  row,
-  quantity
-) {
-
-  const cell =
-    sheet.getRange(
-      row,
-      COL_QUANTITY
+    const item =
+    cleanItem(
+      code.substring(2)
     );
 
 
-  if (quantity <= 1) {
+    if (!currentLocation) {
 
-    cell.clearContent();
+      showError(
+        "Scan Location first"
+      );
 
-  } else {
+      return;
+    }
 
-    cell.setValue(
-      quantity
+
+    saveItem(
+      item,
+      "camera"
     );
 
+    return;
   }
+
+
+  showError(
+    "Unknown QR"
+  );
 
 }
 
 
 
 // ==========================================
-// GET PRODUCT DATA
+// SAVE / MOVE
 // ==========================================
 
-function buildProductData(found) {
+function saveItem(item, source) {
 
-  const row =
-    found.data;
+  if (!item) return;
 
-
-  const item =
-    normalizeItem(
-      row[COL_ITEM - 1]
+  if (inventoryOperationInProgress) {
+    setStatus(
+      "move",
+      "⚠️ VERIFYING PREVIOUS SCAN<br>DO NOT RESCAN",
+      true
     );
-
-
-  const name =
-    String(
-      row[COL_NAME - 1] || ""
-    ).trim();
-
-
-  const price =
-    row[COL_PRICE - 1];
-
-
-  const location =
-    String(
-      row[COL_LOCATION - 1] || ""
-    ).trim();
-
-
-  const quantity =
-    readQuantity(
-      location,
-      row[COL_QUANTITY - 1]
-    );
-
-
-  return {
-
-    item: item,
-
-    name: name,
-
-    price: price,
-
-    location: location,
-
-    quantity: quantity
-
-  };
-
-}
-
-
-
-
-// ==========================================
-// TRANSACTION / EXACTLY-ONCE HELPERS
-// ==========================================
-
-function getTransactionSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  let sheet = ss.getSheetByName(TX_SHEET_NAME);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(TX_SHEET_NAME);
-    sheet.getRange(1, 1, 1, 6).setValues([[
-      "Transaction ID", "Item", "Location",
-      "Status", "Result JSON", "Created"
-    ]]);
-    sheet.setFrozenRows(1);
-    sheet.hideSheet();
+    return;
   }
-  return sheet;
-}
 
-function findTransaction(txId) {
-  const id = String(txId || "").trim();
-  if (!id) return null;
+  inventoryOperationInProgress = true;
 
-  const sheet = getTransactionSheet();
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return null;
+  const transactionId = createTransactionId(item);
 
-  const match = sheet.getRange(2, 1, lastRow - 1, 1)
-    .createTextFinder(id)
-    .matchEntireCell(true)
-    .findNext();
+  setStatus(
+    "",
+    "Saving Item #" + item + "..."
+  );
 
-  if (!match) return null;
-
-  const row = match.getRow();
-  const values = sheet.getRange(row, 1, 1, 6).getValues()[0];
-
-  return {
-    sheet: sheet,
-    row: row,
-    id: String(values[0] || ""),
-    item: String(values[1] || ""),
-    location: String(values[2] || ""),
-    status: String(values[3] || ""),
-    resultJson: String(values[4] || "")
-  };
-}
-
-function parseStoredResult(value) {
-  try {
-    return JSON.parse(String(value || ""));
-  } catch (e) {
-    return null;
-  }
-}
-
-function inventoryState(found) {
-  const location = String(
-    found.sheet.getRange(found.row, COL_LOCATION).getValue() || ""
-  ).trim();
-
-  const qValue =
-    found.sheet.getRange(found.row, COL_QUANTITY).getValue();
-
-  return {
-    location: location,
-    quantity: readQuantity(location, qValue)
-  };
-}
-
-function sameInventoryState(found, location, quantity) {
-  const state = inventoryState(found);
-  return (
-    state.location === String(location || "").trim() &&
-    state.quantity === Number(quantity)
+  sendInventoryTransaction(
+    item,
+    currentLocation,
+    transactionId,
+    0
   );
 }
 
-function createPendingTransaction(txId, item, location, result) {
-  const sheet = getTransactionSheet();
-  sheet.appendRow([
-    txId, item, location, "PENDING",
-    JSON.stringify(result), new Date()
-  ]);
-  SpreadsheetApp.flush();
 
-  return {
-    sheet: sheet,
-    row: sheet.getLastRow()
-  };
-}
+function sendInventoryTransaction(
+  item,
+  location,
+  transactionId,
+  retryNumber
+) {
 
-function markTransactionDone(tx, result) {
-  tx.sheet.getRange(tx.row, 4, 1, 2).setValues([[
-    "DONE",
-    JSON.stringify(result)
-  ]]);
-  SpreadsheetApp.flush();
-}
+  jsonpRequest(
+    "update",
+    {
+      item: item,
+      location: location,
+      transactionId: transactionId
+    },
 
-// ==========================================
-// SCAN ITEM
-//
-// LOGIC:
-//
-// no previous location:
-// FIRST
-// Quantity = 1
-//
-// same location:
-// ADD
-// Quantity + 1
-//
-// different location:
-// MOVE
-// Quantity DOES NOT change
-// ==========================================
+    function(data) {
 
-function updateLocation(itemID, newLocation, transactionId) {
+      if (!data.success) {
+        inventoryOperationInProgress = false;
 
-  const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+        if (data.errorType === "ITEM_NOT_FOUND") {
+          showItemNotFound(item);
+        } else if (
+          data.errorType === "TRANSACTION_UNCERTAIN" ||
+          data.errorType === "VERIFY_FAILED"
+        ) {
+          setStatus(
+            "error",
+            "⚠️ NOT VERIFIED" +
+            "<br><br>ITEM #" + escapeHtml(item) +
+            "<br><br>DO NOT RESCAN THIS ITEM",
+            true
+          );
+          playErrorTone();
+        } else {
+          showError(data.message || "Update failed");
+        }
+        return;
+      }
 
-  try {
-    const item = normalizeItem(itemID);
-    const location = String(newLocation || "").trim();
-    const txId = String(transactionId || "").trim();
+      inventoryOperationInProgress = false;
 
-    if (!item || !location || !txId) {
-      return {
-        success: false,
-        message: "Missing item, location, or transaction ID"
+      const previousQuantity =
+        Number(data.previousQuantity || 0);
+
+      const newQuantity =
+        Number(data.quantity || 1);
+
+      lastSuccessfulScan = {
+        item: data.item || item,
+        name: data.name || "",
+        price: data.price,
+        action: data.action,
+        previousLocation: data.previousLocation || "",
+        newLocation: data.newLocation || location,
+        previousQuantity: previousQuantity,
+        quantity: newQuantity,
+        transactionId: transactionId
       };
-    }
 
-    const existingTx = findTransaction(txId);
+      undoButton.disabled = false;
 
-    if (existingTx) {
-      const stored = parseStoredResult(existingTx.resultJson);
+      totalScanCount++;
+      uniqueItemSet.add(String(data.item || item));
 
       if (
-        existingTx.item !== item ||
-        existingTx.location !== location
+        data.action === "FIRST" ||
+        data.action === "ADD"
       ) {
-        return {
-          success: false,
-          errorType: "TRANSACTION_MISMATCH",
-          message: "Transaction ID mismatch"
-        };
+        unitsAddedCount++;
       }
 
-      if (existingTx.status === "DONE" && stored) {
-        stored.replayed = true;
-        stored.verified = true;
-        return stored;
+      updateStats();
+
+      showProductCard({
+        item: data.item || item,
+        name: data.name,
+        price: data.price,
+        location: data.newLocation || location,
+        quantity: newQuantity
+      });
+
+      const verifiedText =
+        data.replayed
+          ? "✓ ALREADY SAVED & VERIFIED"
+          : "✓ SAVED & VERIFIED";
+
+      if (
+        data.action === "MOVE" ||
+        data.locationChanged === true
+      ) {
+        setStatus(
+          "move",
+          verifiedText +
+          "<br><br>⚠️ LOCATION CHANGED" +
+          "<br><br>ITEM #" + escapeHtml(data.item || item) +
+          "<br>" + escapeHtml(data.name || "") +
+          "<br><br>MOVED:" +
+          "<br>LOCATION " + escapeHtml(data.previousLocation) +
+          " → LOCATION " + escapeHtml(data.newLocation) +
+          "<br><br>QUANTITY: " + newQuantity,
+          true
+        );
+
+        addHistory(
+          "↔ #" + (data.item || item) +
+          " | " + data.previousLocation +
+          " → " + data.newLocation +
+          " | Qty " + newQuantity
+        );
+
+        playMoveTone();
+
+      } else {
+        setStatus(
+          "success",
+          verifiedText +
+          "<br><br>ITEM #" + escapeHtml(data.item || item) +
+          "<br>" + escapeHtml(data.name || "") +
+          "<br><br>QUANTITY: " +
+          previousQuantity + " → " + newQuantity +
+          "<br>LOCATION: " + escapeHtml(data.newLocation),
+          true
+        );
+
+        addHistory(
+          "+ #" + (data.item || item) +
+          " | Location " + data.newLocation +
+          " | Qty " + newQuantity
+        );
+
+        playSuccessTone();
       }
 
-      if (existingTx.status === "PENDING" && stored) {
-        const foundPending = findItem(item);
+      manualItem.value = "";
+    },
 
-        if (!foundPending.found) {
-          return {
-            success: false,
-            errorType: "ITEM_NOT_FOUND",
-            message: "ITEM NOT FOUND"
-          };
-        }
+    function() {
 
-        // Write already happened; response was lost.
+      if (retryNumber < 2) {
+        setStatus(
+          "move",
+          "⚠️ VERIFYING SAVE STATUS..." +
+          "<br><br>ITEM #" + escapeHtml(item) +
+          "<br>DO NOT RESCAN",
+          true
+        );
+
+        setTimeout(function() {
+          sendInventoryTransaction(
+            item,
+            location,
+            transactionId,
+            retryNumber + 1
+          );
+        }, 1500);
+
+        return;
+      }
+
+      inventoryOperationInProgress = false;
+
+      setStatus(
+        "error",
+        "⚠️ SAVE STATUS UNKNOWN" +
+        "<br><br>ITEM #" + escapeHtml(item) +
+        "<br><br>DO NOT RESCAN THIS ITEM",
+        true
+      );
+
+      playErrorTone();
+    }
+  );
+}
+
+
+
+// ==========================================
+// LOOKUP
+// ==========================================
+
+function lookupItem(item) {
+
+  if (!item) {
+
+    showError(
+      "Enter Item #"
+    );
+
+    return;
+  }
+
+
+  setStatus(
+    "lookupStatus",
+    "Looking up Item #" +
+    item +
+    "..."
+  );
+
+
+  jsonpRequest(
+
+    "lookup",
+
+    {
+      item: item
+    },
+
+    function(data) {
+
+
+      if (!data.success) {
+
         if (
-          sameInventoryState(
-            foundPending,
-            stored.newLocation,
-            stored.quantity
-          )
+          data.errorType ===
+          "ITEM_NOT_FOUND"
         ) {
-          stored.replayed = true;
-          stored.verified = true;
-          markTransactionDone(existingTx, stored);
-          return stored;
-        }
 
-        // Transaction was registered but write did not happen.
-        if (
-          sameInventoryState(
-            foundPending,
-            stored.previousLocation,
-            stored.previousQuantity
-          )
-        ) {
-          foundPending.sheet
-            .getRange(foundPending.row, COL_LOCATION)
-            .setValue(stored.newLocation);
-
-          writeQuantity(
-            foundPending.sheet,
-            foundPending.row,
-            stored.quantity
+          showItemNotFound(
+            item
           );
 
-          SpreadsheetApp.flush();
+        } else {
 
-          if (
-            !sameInventoryState(
-              foundPending,
-              stored.newLocation,
-              stored.quantity
-            )
-          ) {
-            return {
-              success: false,
-              errorType: "VERIFY_FAILED",
-              message: "Inventory write could not be verified",
-              transactionId: txId
-            };
-          }
+          showError(
+            data.message ||
+            "Lookup failed"
+          );
 
-          stored.replayed = true;
-          stored.verified = true;
-          markTransactionDone(existingTx, stored);
-          return stored;
         }
 
-        return {
-          success: false,
-          errorType: "TRANSACTION_UNCERTAIN",
-          message: "Transaction state is uncertain. Do not rescan this item.",
-          transactionId: txId
-        };
-      }
-    }
-
-    const found = findItem(item);
-
-    if (!found.found) {
-      return {
-        success: false,
-        errorType: "ITEM_NOT_FOUND",
-        message: "ITEM NOT FOUND"
-      };
-    }
-
-    const product = buildProductData(found);
-    const oldLocation = product.location;
-    const oldQuantity = product.quantity;
-
-    let action = "";
-    let locationChanged = false;
-    let newQuantity = oldQuantity;
-
-    if (!oldLocation) {
-      action = "FIRST";
-      newQuantity = 1;
-    } else if (oldLocation === location) {
-      action = "ADD";
-      newQuantity = oldQuantity + 1;
-    } else {
-      action = "MOVE";
-      locationChanged = true;
-      newQuantity = oldQuantity;
-    }
-
-    const result = {
-      success: true,
-      verified: false,
-      replayed: false,
-      transactionId: txId,
-      action: action,
-      item: product.item,
-      name: product.name,
-      price: product.price,
-      previousLocation: oldLocation,
-      newLocation: location,
-      locationChanged: locationChanged,
-      previousQuantity: oldQuantity,
-      quantity: newQuantity
-    };
-
-    // Register the operation BEFORE changing inventory.
-    const pending = createPendingTransaction(
-      txId, item, location, result
-    );
-
-    found.sheet
-      .getRange(found.row, COL_LOCATION)
-      .setValue(location);
-
-    writeQuantity(
-      found.sheet,
-      found.row,
-      newQuantity
-    );
-
-    SpreadsheetApp.flush();
-
-    // Read K and O back from the sheet.
-    if (!sameInventoryState(found, location, newQuantity)) {
-      return {
-        success: false,
-        errorType: "VERIFY_FAILED",
-        message: "Inventory write could not be verified",
-        transactionId: txId
-      };
-    }
-
-    result.verified = true;
-
-    markTransactionDone(
-      { sheet: pending.sheet, row: pending.row },
-      result
-    );
-
-    return result;
-
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-
-
-// ==========================================
-// LOOKUP ITEM
-// READ ONLY
-// ==========================================
-
-function lookupItem(itemID) {
-
-  const found =
-    findItem(itemID);
-
-
-  if (!found.found) {
-
-    return {
-
-      success: false,
-
-      errorType:
-        "ITEM_NOT_FOUND",
-
-      message:
-        "ITEM NOT FOUND"
-
-    };
-
-  }
-
-
-  const product =
-    buildProductData(found);
-
-
-  return {
-
-    success: true,
-
-    item:
-      product.item,
-
-    name:
-      product.name,
-
-    price:
-      product.price,
-
-    location:
-      product.location,
-
-    quantity:
-      product.quantity
-
-  };
-
-}
-
-
-
-// ==========================================
-// SEARCH BY PRODUCT NAME
-// ==========================================
-
-function searchByName(query) {
-
-  const search =
-    String(query || "")
-      .trim()
-      .toLowerCase();
-
-
-  if (!search) {
-
-    return {
-
-      success: false,
-
-      message:
-        "Enter product name"
-
-    };
-
-  }
-
-
-  const sheet =
-    getSheet();
-
-
-  const data =
-    sheet.getDataRange()
-      .getValues();
-
-
-  const results =
-    [];
-
-
-  for (
-    let i = 1;
-    i < data.length;
-    i++
-  ) {
-
-    const name =
-      String(
-        data[i][COL_NAME - 1] || ""
-      ).trim();
-
-
-    if (!name) {
-
-      continue;
-
-    }
-
-
-    if (
-      name.toLowerCase()
-        .includes(search)
-    ) {
-
-
-      const item =
-        normalizeItem(
-          data[i][COL_ITEM - 1]
-        );
-
-
-      if (!item) {
-
-        continue;
-
+        return;
       }
 
 
-      const location =
-        String(
-          data[i][COL_LOCATION - 1] || ""
-        ).trim();
-
-
-      const quantity =
-        readQuantity(
-          location,
-          data[i][COL_QUANTITY - 1]
-        );
-
-
-      results.push({
+      showProductCard({
 
         item:
-          item,
+          data.item,
 
         name:
-          name,
+          data.name,
 
         price:
-          data[i][COL_PRICE - 1],
+          data.price,
 
         location:
-          location,
+          data.location,
 
         quantity:
-          quantity
+          data.quantity
 
       });
 
 
-      /*
-        Prevent huge search responses.
-      */
+      setStatus(
 
-      if (
-        results.length >= 20
-      ) {
+        "lookupStatus",
 
-        break;
+        "🔍 ITEM #" +
+        escapeHtml(
+          data.item
+        ) +
 
-      }
+        "<br>" +
+
+        escapeHtml(
+          data.name || ""
+        ) +
+
+        "<br>" +
+
+        "LOCATION: " +
+        escapeHtml(
+          data.location ||
+          "Not assigned"
+        ) +
+
+        "<br>" +
+
+        "QUANTITY: " +
+        Number(
+          data.quantity || 0
+        ),
+
+        true
+      );
+
+
+      playLookupTone();
 
     }
+
+  );
+
+}
+
+
+
+// ==========================================
+// SEARCH BY NAME
+// ==========================================
+
+function searchProductName() {
+
+  const query =
+  String(
+    nameSearch.value || ""
+  ).trim();
+
+
+  if (!query) {
+
+    showError(
+      "Enter product name"
+    );
+
+    return;
+  }
+
+
+  searchResults.style.display =
+  "block";
+
+
+  searchResults.innerHTML =
+  "Searching...";
+
+
+  jsonpRequest(
+
+    "search",
+
+    {
+      query: query
+    },
+
+    function(data) {
+
+
+      if (!data.success) {
+
+        showError(
+          data.message ||
+          "Search failed"
+        );
+
+        return;
+      }
+
+
+      renderSearchResults(
+        data.results || []
+      );
+
+    }
+
+  );
+
+}
+
+
+
+// ==========================================
+// SEARCH RESULTS
+// ==========================================
+
+function renderSearchResults(
+  results
+) {
+
+  searchResults.innerHTML =
+  "";
+
+
+  if (!results.length) {
+
+    searchResults.innerHTML =
+    "<strong>No products found</strong>";
+
+    playErrorTone();
+
+    return;
+  }
+
+
+  results.forEach(
+    function(product) {
+
+
+      const div =
+      document.createElement(
+        "div"
+      );
+
+
+      div.className =
+      "searchResult";
+
+
+      const name =
+      document.createElement(
+        "div"
+      );
+
+
+      name.className =
+      "searchName";
+
+
+      name.innerText =
+      product.name ||
+      "No name";
+
+
+      const details =
+      document.createElement(
+        "div"
+      );
+
+
+      details.className =
+      "searchDetails";
+
+
+      details.innerText =
+
+      "#" +
+      product.item +
+
+      " | Location: " +
+      (
+        product.location ||
+        "—"
+      ) +
+
+      " | Qty: " +
+      Number(
+        product.quantity || 0
+      );
+
+
+      div.appendChild(
+        name
+      );
+
+
+      div.appendChild(
+        details
+      );
+
+
+      div.addEventListener(
+        "click",
+        function() {
+
+
+          lookupItem(
+            product.item
+          );
+
+
+          manualItem.value =
+          product.item;
+
+        }
+      );
+
+
+      searchResults.appendChild(
+        div
+      );
+
+    }
+  );
+
+}
+
+
+
+// ==========================================
+// PRODUCT CARD
+// ==========================================
+
+function showProductCard(
+  data
+) {
+
+  productCard.style.display =
+  "block";
+
+
+  productName.innerText =
+  data.name ||
+  "No product name";
+
+
+  productItem.innerText =
+  data.item ||
+  "—";
+
+
+  if (
+    data.price !== "" &&
+    data.price !== null &&
+    data.price !== undefined
+  ) {
+
+    const price =
+    Number(
+      data.price
+    );
+
+
+    if (!isNaN(price)) {
+
+      productPrice.innerText =
+      "$" +
+      price.toFixed(2);
+
+    } else {
+
+      productPrice.innerText =
+      data.price;
+
+    }
+
+  } else {
+
+    productPrice.innerText =
+    "—";
 
   }
 
 
-  return {
+  productLocation.innerText =
+  data.location ||
+  "Not assigned";
 
-    success: true,
 
-    query:
-      query,
-
-    count:
-      results.length,
-
-    results:
-      results
-
-  };
+  productQuantity.innerText =
+  Number(
+    data.quantity || 0
+  );
 
 }
 
@@ -797,442 +1762,989 @@ function searchByName(query) {
 
 // ==========================================
 // UNDO
-//
-// Restores EXACT state from before
-// the last successful scan.
 // ==========================================
 
-function restoreItem(
-  itemID,
-  previousLocation,
-  previousQuantity
-) {
+function undoLastItem() {
 
-  const lock =
-    LockService.getScriptLock();
+  if (!lastSuccessfulScan) {
+    return;
+  }
 
 
-  lock.waitLock(10000);
+  const undoData =
+  lastSuccessfulScan;
 
 
-  try {
-
-    const found =
-      findItem(itemID);
+  undoButton.disabled =
+  true;
 
 
-    if (!found.found) {
-
-      return {
-
-        success: false,
-
-        errorType:
-          "ITEM_NOT_FOUND",
-
-        message:
-          "ITEM NOT FOUND"
-
-      };
-
-    }
+  setStatus(
+    "",
+    "Undoing Item #" +
+    undoData.item +
+    "..."
+  );
 
 
-    const oldLocation =
-      String(
-        previousLocation || ""
-      ).trim();
+  jsonpRequest(
 
+    "undo",
 
-    let oldQuantity =
-      Number(
-        previousQuantity
-      );
-
-
-    if (
-      isNaN(oldQuantity) ||
-      oldQuantity < 0
-    ) {
-
-      oldQuantity =
-        0;
-
-    }
-
-
-
-    const locationCell =
-      found.sheet.getRange(
-        found.row,
-        COL_LOCATION
-      );
-
-
-    // Restore Location
-
-    if (!oldLocation) {
-
-      locationCell.clearContent();
-
-    } else {
-
-      locationCell.setValue(
-        oldLocation
-      );
-
-    }
-
-
-
-    // Restore Quantity
-
-    writeQuantity(
-      found.sheet,
-      found.row,
-      oldQuantity
-    );
-
-
-
-    return {
-
-      success: true,
-
-      message:
-        "Undo successful",
+    {
 
       item:
-        normalizeItem(
-          itemID
-        ),
+        undoData.item,
 
-      restoredLocation:
-        oldLocation,
+      previousLocation:
+        undoData.previousLocation,
 
-      restoredQuantity:
-        oldQuantity
+      previousQuantity:
+        undoData.previousQuantity
 
-    };
+    },
 
-
-  } finally {
-
-    lock.releaseLock();
-
-  }
-
-}
+    function(data) {
 
 
+      if (!data.success) {
 
-// ==========================================
-// JSON / JSONP RESPONSE
-// ==========================================
-
-function jsonpResponse(
-  result,
-  callback
-) {
-
-  if (callback) {
-
-    return ContentService
-      .createTextOutput(
-
-        callback +
-        "(" +
-        JSON.stringify(result) +
-        ");"
-
-      )
-      .setMimeType(
-        ContentService
-          .MimeType
-          .JAVASCRIPT
-      );
-
-  }
-
-
-  return ContentService
-    .createTextOutput(
-      JSON.stringify(result)
-    )
-    .setMimeType(
-      ContentService
-        .MimeType
-        .JSON
-    );
-
-}
-
-
-
-// ==========================================
-// WEB APP
-// ==========================================
-
-function doGet(e) {
-
-  try {
-
-
-    const action =
-      String(
-        e.parameter.action || ""
-      ).trim();
-
-
-    const callback =
-      String(
-        e.parameter.callback || ""
-      ).trim();
-
-
-
-    // ======================================
-    // UPDATE / SCAN
-    // ======================================
-
-    if (action === "update") {
-
-
-      const item =
-        normalizeItem(
-          e.parameter.item
+        showError(
+          data.message ||
+          "Undo failed"
         );
 
 
-      const location =
-        String(
-          e.parameter.location || ""
-        ).trim();
+        undoButton.disabled =
+        false;
+
+        return;
+      }
 
 
-      let result;
+
+      /*
+        Adjust session counters.
+      */
+
+      if (totalScanCount > 0) {
+
+        totalScanCount--;
+
+      }
 
 
       if (
-        !item ||
-        !location
+        undoData.action === "FIRST" ||
+        undoData.action === "ADD"
       ) {
 
-        result = {
+        if (
+          unitsAddedCount > 0
+        ) {
 
-          success: false,
+          unitsAddedCount--;
 
-          message:
-            "Missing item or location"
-
-        };
-
-      } else {
-
-        result =
-          updateLocation(
-            item,
-            location,
-            String(e.parameter.transactionId || "").trim()
-          );
+        }
 
       }
 
 
-      return jsonpResponse(
-        result,
-        callback
-      );
-
-    }
+      updateStats();
 
 
 
-    // ======================================
-    // LOOKUP
-    // ======================================
+      showProductCard({
 
-    if (action === "lookup") {
+        item:
+          undoData.item,
+
+        name:
+          undoData.name,
+
+        price:
+          undoData.price,
+
+        location:
+          data.restoredLocation,
+
+        quantity:
+          data.restoredQuantity
+
+      });
 
 
-      const item =
-        normalizeItem(
-          e.parameter.item
+
+      if (
+        undoData.action === "MOVE"
+      ) {
+
+        setStatus(
+
+          "undo",
+
+          "↶ MOVE UNDONE" +
+
+          "<br><br>" +
+
+          "ITEM #" +
+          escapeHtml(
+            undoData.item
+          ) +
+
+          "<br>" +
+
+          "LOCATION " +
+          escapeHtml(
+            undoData.newLocation
+          ) +
+
+          " → LOCATION " +
+          escapeHtml(
+            data.restoredLocation
+          ) +
+
+          "<br>" +
+
+          "QUANTITY: " +
+          Number(
+            data.restoredQuantity || 0
+          ),
+
+          true
         );
 
 
-      let result;
+        addHistory(
 
+          "↶ #" +
+          undoData.item +
 
-      if (!item) {
+          " | " +
+          undoData.newLocation +
 
-        result = {
-
-          success: false,
-
-          message:
-            "Missing item"
-
-        };
-
-      } else {
-
-        result =
-          lookupItem(item);
-
-      }
-
-
-      return jsonpResponse(
-        result,
-        callback
-      );
-
-    }
-
-
-
-    // ======================================
-    // SEARCH BY NAME
-    // ======================================
-
-    if (action === "search") {
-
-
-      const query =
-        String(
-          e.parameter.query || ""
-        ).trim();
-
-
-      const result =
-        searchByName(
-          query
-        );
-
-
-      return jsonpResponse(
-        result,
-        callback
-      );
-
-    }
-
-
-
-    // ======================================
-    // UNDO
-    // ======================================
-
-    if (action === "undo") {
-
-
-      const item =
-        normalizeItem(
-          e.parameter.item
-        );
-
-
-      const previousLocation =
-        String(
-          e.parameter.previousLocation || ""
-        ).trim();
-
-
-      const previousQuantity =
-        String(
-          e.parameter.previousQuantity || "0"
-        ).trim();
-
-
-      let result;
-
-
-      if (!item) {
-
-        result = {
-
-          success: false,
-
-          message:
-            "Missing item"
-
-        };
-
-      } else {
-
-        result =
-          restoreItem(
-
-            item,
-
-            previousLocation,
-
-            previousQuantity
-
-          );
-
-      }
-
-
-      return jsonpResponse(
-        result,
-        callback
-      );
-
-    }
-
-
-
-    // ======================================
-    // NORMAL PAGE
-    // ======================================
-
-    const template =
-      HtmlService
-        .createTemplateFromFile(
-          "index"
-        );
-
-
-    template.location =
-      e.parameter.location || "";
-
-
-    template.item =
-      e.parameter.item || "";
-
-
-    return template
-      .evaluate()
-      .setTitle(
-        "Inventory Scanner"
-      );
-
-
-  } catch(error) {
-
-
-    return jsonpResponse(
-
-      {
-
-        success: false,
-
-        message:
-          String(
-            error.message ||
-            error
+          " → " +
+          (
+            data.restoredLocation ||
+            "blank"
           )
 
-      },
+        );
 
-      String(
-        e.parameter.callback || ""
-      )
+      } else {
 
+        setStatus(
+
+          "undo",
+
+          "↶ UNDO SUCCESSFUL" +
+
+          "<br>" +
+
+          "ITEM #" +
+          escapeHtml(
+            undoData.item
+          ) +
+
+          "<br>" +
+
+          "LOCATION: " +
+          escapeHtml(
+            data.restoredLocation ||
+            "BLANK"
+          ) +
+
+          "<br>" +
+
+          "QUANTITY: " +
+          Number(
+            data.restoredQuantity || 0
+          ),
+
+          true
+        );
+
+
+        addHistory(
+
+          "↶ #" +
+          undoData.item +
+
+          " | Qty " +
+          Number(
+            data.restoredQuantity || 0
+          )
+
+        );
+
+      }
+
+
+
+      /*
+        Permit immediate re-scan.
+      */
+
+      recentScans.delete(
+        "I:" +
+        undoData.item
+      );
+
+
+      lastSuccessfulScan =
+      null;
+
+
+      playUndoTone();
+
+    }
+
+  );
+
+}
+
+
+
+// ==========================================
+// ITEM NOT FOUND
+// ==========================================
+
+function showItemNotFound(
+  item
+) {
+
+  productCard.style.display =
+  "none";
+
+
+  setStatus(
+
+    "notFound",
+
+    "❌ ITEM NOT FOUND" +
+
+    "<br><br>" +
+
+    "#" +
+    escapeHtml(item),
+
+    true
+  );
+
+
+  playNotFoundTone();
+
+}
+
+
+
+// ==========================================
+// SESSION STATS
+// ==========================================
+
+function updateStats() {
+
+  totalScansDisplay.innerText =
+  totalScanCount;
+
+
+  uniqueItemsDisplay.innerText =
+  uniqueItemSet.size;
+
+
+  totalUnitsDisplay.innerText =
+  unitsAddedCount;
+
+}
+
+
+
+// ==========================================
+// HISTORY
+// ==========================================
+
+function addHistory(text) {
+
+  const time =
+  new Date()
+    .toLocaleTimeString(
+      [],
+      {
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit"
+      }
+    );
+
+
+  history.unshift(
+    time +
+    " — " +
+    text
+  );
+
+
+  if (
+    history.length > 10
+  ) {
+
+    history =
+    history.slice(
+      0,
+      10
     );
 
   }
 
+
+  renderHistory();
+
 }
+
+
+function renderHistory() {
+
+  historyList.innerHTML =
+  "";
+
+
+  if (!history.length) {
+
+    historyList.innerText =
+    "No activity yet";
+
+    return;
+  }
+
+
+  history.forEach(
+    function(text) {
+
+
+      const div =
+      document.createElement(
+        "div"
+      );
+
+
+      div.className =
+      "historyItem";
+
+
+      div.innerText =
+      text;
+
+
+      historyList.appendChild(
+        div
+      );
+
+    }
+  );
+
+}
+
+
+
+// ==========================================
+// CLEAR LOCATION
+// ==========================================
+
+function clearLocation() {
+
+  currentLocation =
+  "";
+
+
+  localStorage.removeItem(
+    "inventoryLocation"
+  );
+
+
+  locationDisplay.innerText =
+  "Not selected";
+
+
+  recentScans.clear();
+
+
+  setStatus(
+    "",
+    "Scan Location QR first"
+  );
+
+}
+
+
+
+// ==========================================
+// JSONP
+// ==========================================
+
+function jsonpRequest(
+  action,
+  parameters,
+  callback,
+  failureCallback
+) {
+
+  const callbackName =
+    "inventoryCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(Math.random() * 1000000);
+
+  const script = document.createElement("script");
+  let finished = false;
+  let timeoutId = null;
+
+  window[callbackName] = function(data) {
+    if (finished) return;
+
+    finished = true;
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    try {
+      callback(data);
+    } finally {
+      cleanup();
+    }
+  };
+
+  let url =
+    API_URL +
+    "?action=" +
+    encodeURIComponent(action);
+
+  for (const key in parameters) {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        parameters,
+        key
+      )
+    ) {
+      url +=
+        "&" +
+        encodeURIComponent(key) +
+        "=" +
+        encodeURIComponent(parameters[key]);
+    }
+  }
+
+  url +=
+    "&callback=" +
+    encodeURIComponent(callbackName) +
+    "&t=" +
+    Date.now();
+
+  script.async = true;
+  script.src = url;
+
+  script.onerror = function() {
+    if (finished) return;
+
+    finished = true;
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    cleanup();
+
+    if (failureCallback) {
+      failureCallback("network");
+    } else {
+      showError("Could not reach server");
+    }
+  };
+
+  document.head.appendChild(script);
+
+  timeoutId = setTimeout(
+    function() {
+      if (finished) return;
+
+      finished = true;
+      cleanup();
+
+      if (failureCallback) {
+        failureCallback("timeout");
+      } else {
+        showError("Server timeout");
+      }
+    },
+    15000
+  );
+
+  function cleanup() {
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+    setTimeout(function() {
+      try {
+        delete window[callbackName];
+      } catch(e) {
+        window[callbackName] = undefined;
+      }
+    }, 1000);
+  }
+}
+
+
+
+// ==========================================
+// HELPERS
+// ==========================================
+
+function createTransactionId(item) {
+  return (
+    "scan-" +
+    Date.now() +
+    "-" +
+    String(item) +
+    "-" +
+    Math.random().toString(36).substring(2, 10)
+  );
+}
+
+
+function cleanItem(value) {
+
+  return String(
+    value || ""
+  )
+    .replace("#", "")
+    .replace(/^I:/i, "")
+    .trim();
+
+}
+
+
+function cleanRecentScans(now) {
+
+  for (
+    const [
+      code,
+      time
+    ] of recentScans
+  ) {
+
+    if (
+      now - time >
+      SAME_QR_LOCK_TIME
+    ) {
+
+      recentScans.delete(
+        code
+      );
+
+    }
+
+  }
+
+}
+
+
+function setStatus(
+  className,
+  content,
+  allowHtml
+) {
+
+  statusDisplay.className =
+  className || "";
+
+
+  if (allowHtml) {
+
+    statusDisplay.innerHTML =
+    content;
+
+  } else {
+
+    statusDisplay.innerText =
+    content;
+
+  }
+
+}
+
+
+function showError(message) {
+
+  setStatus(
+    "error",
+    "ERROR: " +
+    message
+  );
+
+
+  playErrorTone();
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(
+    value == null
+      ? ""
+      : value
+  )
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+
+// ==========================================
+// AUDIO
+// ==========================================
+
+function unlockAudio() {
+
+  try {
+
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+
+    if (!audioContext) {
+
+      audioContext =
+      new AudioContext();
+
+    }
+
+
+    if (
+      audioContext.state ===
+      "suspended"
+    ) {
+
+      audioContext.resume();
+
+    }
+
+
+    const oscillator =
+      audioContext
+        .createOscillator();
+
+
+    const gain =
+      audioContext
+        .createGain();
+
+
+    gain.gain.value =
+    0.0001;
+
+
+    oscillator.connect(
+      gain
+    );
+
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.start();
+
+
+    oscillator.stop(
+      audioContext.currentTime +
+      0.05
+    );
+
+
+  } catch(e) {}
+
+}
+
+
+function playTone(
+  frequency,
+  duration,
+  volume
+) {
+
+  try {
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    if (
+      audioContext.state ===
+      "suspended"
+    ) {
+
+      audioContext.resume();
+
+    }
+
+
+    const oscillator =
+      audioContext
+        .createOscillator();
+
+
+    const gain =
+      audioContext
+        .createGain();
+
+
+    oscillator.connect(
+      gain
+    );
+
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.type =
+    "sine";
+
+
+    oscillator.frequency.value =
+    frequency;
+
+
+    gain.gain.setValueAtTime(
+
+      volume || 0.35,
+
+      audioContext.currentTime
+
+    );
+
+
+    gain.gain
+      .exponentialRampToValueAtTime(
+
+        0.01,
+
+        audioContext.currentTime +
+        duration / 1000
+
+      );
+
+
+    oscillator.start();
+
+
+    oscillator.stop(
+
+      audioContext.currentTime +
+      duration / 1000
+
+    );
+
+
+  } catch(e) {}
+
+}
+
+
+function playLocationTone() {
+
+  playTone(
+    650,
+    120,
+    0.25
+  );
+
+}
+
+
+function playSuccessTone() {
+
+  playTone(
+    850,
+    110,
+    0.35
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        1150,
+        150,
+        0.35
+      );
+
+    },
+    125
+  );
+
+}
+
+
+function playMoveTone() {
+
+  playTone(
+    950,
+    150,
+    0.4
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        600,
+        180,
+        0.4
+      );
+
+    },
+    170
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        950,
+        180,
+        0.4
+      );
+
+    },
+    360
+  );
+
+}
+
+
+function playLookupTone() {
+
+  playTone(
+    750,
+    100,
+    0.25
+  );
+
+}
+
+
+function playErrorTone() {
+
+  playTone(
+    220,
+    450,
+    0.4
+  );
+
+}
+
+
+function playNotFoundTone() {
+
+  playTone(
+    180,
+    250,
+    0.5
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        180,
+        250,
+        0.5
+      );
+
+    },
+    300
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        180,
+        400,
+        0.5
+      );
+
+    },
+    600
+  );
+
+}
+
+
+function playUndoTone() {
+
+  playTone(
+    700,
+    120,
+    0.3
+  );
+
+
+  setTimeout(
+    function() {
+
+      playTone(
+        500,
+        180,
+        0.3
+      );
+
+    },
+    130
+  );
+
+}
+
+
+</script>
+
+</body>
+</html>
