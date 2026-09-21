@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1.0"
@@ -14,7 +12,6 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-
 body {
   font-family: Arial, sans-serif;
   max-width: 650px;
@@ -294,128 +291,55 @@ input {
   font-size: 13px;
   color: #666;
 }
-
 </style>
-
 </head>
 
 <body>
 
-
 <h1>Inventory Scanner</h1>
 
-
 <div class="box">
-
-  <div class="label">
-    Mode
-  </div>
-
-  <div id="modeDisplay">
-    INVENTORY / MOVE
-  </div>
-
+  <div class="label">Mode</div>
+  <div id="modeDisplay">INVENTORY / MOVE</div>
 </div>
-
 
 <div class="modeButtons">
-
-  <button id="inventoryButton">
-    📦 INVENTORY
-  </button>
-
-  <button id="lookupButton">
-    🔍 LOOKUP
-  </button>
-
+  <button id="inventoryButton">📦 INVENTORY</button>
+  <button id="lookupButton">🔍 LOOKUP</button>
 </div>
-
 
 <div class="box">
-
-  <div class="label">
-    Current Location
-  </div>
-
-  <div id="location">
-    Not selected
-  </div>
-
+  <div class="label">Current Location</div>
+  <div id="location">Not selected</div>
 </div>
-
 
 <div class="stats">
 
   <div class="stat">
-
-    <div
-      class="statNumber"
-      id="totalScans"
-    >
-      0
-    </div>
-
-    <div class="statLabel">
-      TOTAL SCANS
-    </div>
-
+    <div class="statNumber" id="totalScans">0</div>
+    <div class="statLabel">TOTAL SCANS</div>
   </div>
 
-
   <div class="stat">
-
-    <div
-      class="statNumber"
-      id="uniqueItems"
-    >
-      0
-    </div>
-
-    <div class="statLabel">
-      UNIQUE ITEMS
-    </div>
-
+    <div class="statNumber" id="uniqueItems">0</div>
+    <div class="statLabel">UNIQUE ITEMS</div>
   </div>
 
-
   <div class="stat">
-
-    <div
-      class="statNumber"
-      id="totalUnits"
-    >
-      0
-    </div>
-
-    <div class="statLabel">
-      UNITS ADDED
-    </div>
-
+    <div class="statNumber" id="totalUnits">0</div>
+    <div class="statLabel">UNITS ADDED</div>
   </div>
 
 </div>
 
-
-<button id="startButton">
-  START SCANNER
-</button>
-
+<button id="startButton">START SCANNER</button>
 
 <div id="reader"></div>
 
-
-<div id="status">
-  Scan Location QR first
-</div>
-
-
-<!-- MANUAL ITEM -->
+<div id="status">Scan Location QR first</div>
 
 <div class="inputBox">
-
-  <div class="label">
-    Manual Item #
-  </div>
+  <div class="label">Manual Item #</div>
 
   <input
     id="manualItem"
@@ -425,27 +349,13 @@ input {
   >
 
   <div class="inputButtons">
-
-    <button id="manualScanButton">
-      ADD / MOVE
-    </button>
-
-    <button id="manualLookupButton">
-      LOOKUP
-    </button>
-
+    <button id="manualScanButton">ADD / MOVE</button>
+    <button id="manualLookupButton">LOOKUP</button>
   </div>
-
 </div>
 
-
-<!-- NAME SEARCH -->
-
 <div class="inputBox">
-
-  <div class="label">
-    Search Product Name
-  </div>
+  <div class="label">Search Product Name</div>
 
   <input
     id="nameSearch"
@@ -456,20 +366,13 @@ input {
   <button id="searchNameButton">
     SEARCH BY NAME
   </button>
-
 </div>
-
 
 <div id="searchResults"></div>
 
-
-<!-- PRODUCT CARD -->
-
 <div id="productCard">
 
-  <div id="productName">
-    —
-  </div>
+  <div id="productName">—</div>
 
   <div class="productRow">
     Item #:
@@ -493,223 +396,116 @@ input {
 
 </div>
 
-
-<button
-  id="undoButton"
-  disabled
->
+<button id="undoButton" disabled>
   ↶ UNDO LAST ITEM
 </button>
-
 
 <button id="clearButton">
   CLEAR LOCATION
 </button>
 
-
 <div id="historyBox">
-
-  <strong>
-    Recent Activity
-  </strong>
-
-  <div
-    id="historyList"
-    class="small"
-  >
+  <strong>Recent Activity</strong>
+  <div id="historyList" class="small">
     No activity yet
   </div>
-
 </div>
 
-
 <script>
-
 
 const API_URL =
 "https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
 
-
-const SAME_QR_LOCK_TIME =
-8000;
-
+const SAME_QR_LOCK_TIME = 8000;
 
 let currentLocation =
-localStorage.getItem(
-  "inventoryLocation"
-) || "";
+localStorage.getItem("inventoryLocation") || "";
 
+let currentMode = "inventory";
+let scanner = null;
+let scannerStarted = false;
+let audioContext = null;
+let lastSuccessfulScan = null;
 
-let currentMode =
-"inventory";
+let totalScanCount = 0;
+let unitsAddedCount = 0;
 
-
-let scanner =
-null;
-
-
-let scannerStarted =
-false;
-
-
-let audioContext =
-null;
-
-
-let lastSuccessfulScan =
-null;
-
-
-let totalScanCount =
-0;
-
-
-let unitsAddedCount =
-0;
-
-
-let uniqueItemSet =
-new Set();
-
-
-let history =
-[];
-
-
-const recentScans =
-new Map();
-
-
-
-// ==========================================
-// ELEMENTS
-// ==========================================
+let uniqueItemSet = new Set();
+let history = [];
+const recentScans = new Map();
 
 const locationDisplay =
-document.getElementById(
-  "location"
-);
+document.getElementById("location");
 
 const modeDisplay =
-document.getElementById(
-  "modeDisplay"
-);
+document.getElementById("modeDisplay");
 
 const statusDisplay =
-document.getElementById(
-  "status"
-);
+document.getElementById("status");
 
 const startButton =
-document.getElementById(
-  "startButton"
-);
+document.getElementById("startButton");
 
 const inventoryButton =
-document.getElementById(
-  "inventoryButton"
-);
+document.getElementById("inventoryButton");
 
 const lookupButton =
-document.getElementById(
-  "lookupButton"
-);
+document.getElementById("lookupButton");
 
 const undoButton =
-document.getElementById(
-  "undoButton"
-);
+document.getElementById("undoButton");
 
 const clearButton =
-document.getElementById(
-  "clearButton"
-);
+document.getElementById("clearButton");
 
 const manualItem =
-document.getElementById(
-  "manualItem"
-);
+document.getElementById("manualItem");
 
 const manualScanButton =
-document.getElementById(
-  "manualScanButton"
-);
+document.getElementById("manualScanButton");
 
 const manualLookupButton =
-document.getElementById(
-  "manualLookupButton"
-);
+document.getElementById("manualLookupButton");
 
 const nameSearch =
-document.getElementById(
-  "nameSearch"
-);
+document.getElementById("nameSearch");
 
 const searchNameButton =
-document.getElementById(
-  "searchNameButton"
-);
+document.getElementById("searchNameButton");
 
 const searchResults =
-document.getElementById(
-  "searchResults"
-);
+document.getElementById("searchResults");
 
 const productCard =
-document.getElementById(
-  "productCard"
-);
+document.getElementById("productCard");
 
 const productName =
-document.getElementById(
-  "productName"
-);
+document.getElementById("productName");
 
 const productItem =
-document.getElementById(
-  "productItem"
-);
+document.getElementById("productItem");
 
 const productPrice =
-document.getElementById(
-  "productPrice"
-);
+document.getElementById("productPrice");
 
 const productLocation =
-document.getElementById(
-  "productLocation"
-);
+document.getElementById("productLocation");
 
 const productQuantity =
-document.getElementById(
-  "productQuantity"
-);
+document.getElementById("productQuantity");
 
 const totalScansDisplay =
-document.getElementById(
-  "totalScans"
-);
+document.getElementById("totalScans");
 
 const uniqueItemsDisplay =
-document.getElementById(
-  "uniqueItems"
-);
+document.getElementById("uniqueItems");
 
 const totalUnitsDisplay =
-document.getElementById(
-  "totalUnits"
-);
+document.getElementById("totalUnits");
 
 const historyList =
-document.getElementById(
-  "historyList"
-);
+document.getElementById("historyList");
 
-
-
-// ==========================================
-// INITIAL STATE
-// ==========================================
 
 if (currentLocation) {
 
@@ -718,21 +514,14 @@ if (currentLocation) {
 
   statusDisplay.innerText =
   "Ready. Scan Item QR.";
-
 }
 
-
-
-// ==========================================
-// BUTTONS
-// ==========================================
 
 inventoryButton.addEventListener(
   "click",
   function() {
 
-    currentMode =
-    "inventory";
+    currentMode = "inventory";
 
     modeDisplay.innerText =
     "INVENTORY / MOVE";
@@ -741,7 +530,6 @@ inventoryButton.addEventListener(
 
     searchResults.style.display =
     "none";
-
 
     if (currentLocation) {
 
@@ -756,9 +544,7 @@ inventoryButton.addEventListener(
         "",
         "Scan Location QR first"
       );
-
     }
-
   }
 );
 
@@ -767,8 +553,7 @@ lookupButton.addEventListener(
   "click",
   function() {
 
-    currentMode =
-    "lookup";
+    currentMode = "lookup";
 
     modeDisplay.innerText =
     "PRODUCT LOOKUP";
@@ -779,7 +564,6 @@ lookupButton.addEventListener(
       "lookupStatus",
       "Scan Product QR"
     );
-
   }
 );
 
@@ -807,38 +591,24 @@ manualScanButton.addEventListener(
   function() {
 
     const item =
-    cleanItem(
-      manualItem.value
-    );
-
+    cleanItem(manualItem.value);
 
     if (!item) {
 
-      showError(
-        "Enter Item #"
-      );
-
+      showError("Enter Item #");
       return;
-
     }
-
 
     if (!currentLocation) {
 
-      showError(
-        "Select Location first"
-      );
-
+      showError("Select Location first");
       return;
-
     }
-
 
     saveItem(
       item,
       "manual"
     );
-
   }
 );
 
@@ -848,24 +618,15 @@ manualLookupButton.addEventListener(
   function() {
 
     const item =
-    cleanItem(
-      manualItem.value
-    );
-
+    cleanItem(manualItem.value);
 
     if (!item) {
 
-      showError(
-        "Enter Item #"
-      );
-
+      showError("Enter Item #");
       return;
-
     }
 
-
     lookupItem(item);
-
   }
 );
 
@@ -882,14 +643,13 @@ manualItem.addEventListener(
 
     if (event.key === "Enter") {
 
-      lookupItem(
-        cleanItem(
-          manualItem.value
-        )
-      );
+      const item =
+      cleanItem(manualItem.value);
 
+      if (item) {
+        lookupItem(item);
+      }
     }
-
   }
 );
 
@@ -899,19 +659,13 @@ nameSearch.addEventListener(
   function(event) {
 
     if (event.key === "Enter") {
-
       searchProductName();
-
     }
-
   }
 );
 
 
-
-// ==========================================
 // CAMERA
-// ==========================================
 
 function startScanner() {
 
@@ -919,27 +673,20 @@ function startScanner() {
     return;
   }
 
-
   unlockAudio();
-
 
   setStatus(
     "",
     "Starting camera..."
   );
 
-
   scanner =
-  new Html5Qrcode(
-    "reader"
-  );
-
+  new Html5Qrcode("reader");
 
   scanner.start(
 
     {
-      facingMode:
-        "environment"
+      facingMode: "environment"
     },
 
     {
@@ -959,25 +706,19 @@ function startScanner() {
 
   .then(function() {
 
-    scannerStarted =
-    true;
+    scannerStarted = true;
 
     startButton.style.display =
     "none";
 
-
-    if (
-      currentMode === "lookup"
-    ) {
+    if (currentMode === "lookup") {
 
       setStatus(
         "lookupStatus",
         "Scan Product QR"
       );
 
-    } else if (
-      currentLocation
-    ) {
+    } else if (currentLocation) {
 
       setStatus(
         "",
@@ -990,9 +731,7 @@ function startScanner() {
         "",
         "Scan Location QR first"
       );
-
     }
-
   })
 
   .catch(function(error) {
@@ -1001,59 +740,39 @@ function startScanner() {
       "Camera error: " +
       error
     );
-
   });
-
 }
 
 
-
-// ==========================================
 // QR SCAN
-// ==========================================
 
-function onScanSuccess(
-  decodedText
-) {
+function onScanSuccess(decodedText) {
 
   const code =
-  String(decodedText || "")
-    .trim();
-
+  String(decodedText || "").trim();
 
   const now =
   Date.now();
 
-
   const previous =
   recentScans.get(code) || 0;
-
 
   if (
     now - previous <
     SAME_QR_LOCK_TIME
   ) {
-
     return;
-
   }
-
 
   recentScans.set(
     code,
     now
   );
 
-
   cleanRecentScans(now);
 
 
-
-  // LOOKUP MODE
-
-  if (
-    currentMode === "lookup"
-  ) {
+  if (currentMode === "lookup") {
 
     if (
       code.toUpperCase()
@@ -1066,21 +785,13 @@ function onScanSuccess(
       );
 
       lookupItem(item);
-
       return;
     }
 
-
-    showError(
-      "Scan Item QR"
-    );
-
+    showError("Scan Item QR");
     return;
   }
 
-
-
-  // LOCATION QR
 
   if (
     code.toUpperCase()
@@ -1088,28 +799,22 @@ function onScanSuccess(
   ) {
 
     const location =
-    code.substring(2)
-      .trim();
-
+    code.substring(2).trim();
 
     if (!location) {
       return;
     }
 
-
     currentLocation =
     location;
-
 
     localStorage.setItem(
       "inventoryLocation",
       currentLocation
     );
 
-
     locationDisplay.innerText =
     currentLocation;
-
 
     setStatus(
       "success",
@@ -1117,15 +822,11 @@ function onScanSuccess(
       currentLocation
     );
 
-
     playLocationTone();
 
     return;
   }
 
-
-
-  // ITEM QR
 
   if (
     code.toUpperCase()
@@ -1137,7 +838,6 @@ function onScanSuccess(
       code.substring(2)
     );
 
-
     if (!currentLocation) {
 
       showError(
@@ -1147,7 +847,6 @@ function onScanSuccess(
       return;
     }
 
-
     saveItem(
       item,
       "camera"
@@ -1156,28 +855,17 @@ function onScanSuccess(
     return;
   }
 
-
-  showError(
-    "Unknown QR"
-  );
-
+  showError("Unknown QR");
 }
 
 
-
-// ==========================================
 // SAVE / MOVE
-// ==========================================
 
-function saveItem(
-  item,
-  source
-) {
+function saveItem(item, source) {
 
   if (!item) {
     return;
   }
-
 
   setStatus(
     "",
@@ -1185,7 +873,6 @@ function saveItem(
     item +
     "..."
   );
-
 
   jsonpRequest(
 
@@ -1198,7 +885,6 @@ function saveItem(
 
     function(data) {
 
-
       if (!data.success) {
 
         if (
@@ -1206,9 +892,7 @@ function saveItem(
           "ITEM_NOT_FOUND"
         ) {
 
-          showItemNotFound(
-            item
-          );
+          showItemNotFound(item);
 
         } else {
 
@@ -1216,12 +900,10 @@ function saveItem(
             data.message ||
             "Update failed"
           );
-
         }
 
         return;
       }
-
 
 
       const previousQuantity =
@@ -1229,12 +911,10 @@ function saveItem(
         data.previousQuantity || 0
       );
 
-
       const newQuantity =
       Number(
         data.quantity || 1
       );
-
 
 
       lastSuccessfulScan = {
@@ -1263,16 +943,12 @@ function saveItem(
 
         quantity:
           newQuantity
-
       };
 
 
       undoButton.disabled =
       false;
 
-
-
-      // SESSION STATS
 
       totalScanCount++;
 
@@ -1281,25 +957,16 @@ function saveItem(
       );
 
 
-      /*
-        FIRST and ADD create an
-        additional inventoried unit.
-
-        MOVE does not.
-      */
-
       if (
         data.action === "FIRST" ||
         data.action === "ADD"
       ) {
 
         unitsAddedCount++;
-
       }
 
 
       updateStats();
-
 
 
       showProductCard({
@@ -1319,20 +986,15 @@ function saveItem(
 
         quantity:
           newQuantity
-
       });
 
 
-
-      // ====================================
       // LOCATION CHANGED
-      // ====================================
 
       if (
         data.action === "MOVE" ||
         data.locationChanged === true
       ) {
-
 
         setStatus(
 
@@ -1391,21 +1053,12 @@ function saveItem(
 
           " | Qty " +
           newQuantity
-
         );
 
 
         playMoveTone();
 
-      }
-
-
-      // ====================================
-      // FIRST / ADD
-      // ====================================
-
-      else {
-
+      } else {
 
         setStatus(
 
@@ -1448,41 +1101,29 @@ function saveItem(
 
           " | Qty " +
           newQuantity
-
         );
 
 
         playSuccessTone();
-
       }
 
 
       manualItem.value =
       "";
-
     }
-
   );
-
 }
 
 
-
-// ==========================================
 // LOOKUP
-// ==========================================
 
 function lookupItem(item) {
 
   if (!item) {
 
-    showError(
-      "Enter Item #"
-    );
-
+    showError("Enter Item #");
     return;
   }
-
 
   setStatus(
     "lookupStatus",
@@ -1490,7 +1131,6 @@ function lookupItem(item) {
     item +
     "..."
   );
-
 
   jsonpRequest(
 
@@ -1502,7 +1142,6 @@ function lookupItem(item) {
 
     function(data) {
 
-
       if (!data.success) {
 
         if (
@@ -1510,9 +1149,7 @@ function lookupItem(item) {
           "ITEM_NOT_FOUND"
         ) {
 
-          showItemNotFound(
-            item
-          );
+          showItemNotFound(item);
 
         } else {
 
@@ -1520,7 +1157,6 @@ function lookupItem(item) {
             data.message ||
             "Lookup failed"
           );
-
         }
 
         return;
@@ -1543,7 +1179,6 @@ function lookupItem(item) {
 
         quantity:
           data.quantity
-
       });
 
 
@@ -1552,9 +1187,7 @@ function lookupItem(item) {
         "lookupStatus",
 
         "🔍 ITEM #" +
-        escapeHtml(
-          data.item
-        ) +
+        escapeHtml(data.item) +
 
         "<br>" +
 
@@ -1582,18 +1215,12 @@ function lookupItem(item) {
 
 
       playLookupTone();
-
     }
-
   );
-
 }
 
 
-
-// ==========================================
 // SEARCH BY NAME
-// ==========================================
 
 function searchProductName() {
 
@@ -1601,7 +1228,6 @@ function searchProductName() {
   String(
     nameSearch.value || ""
   ).trim();
-
 
   if (!query) {
 
@@ -1612,10 +1238,8 @@ function searchProductName() {
     return;
   }
 
-
   searchResults.style.display =
   "block";
-
 
   searchResults.innerHTML =
   "Searching...";
@@ -1631,7 +1255,6 @@ function searchProductName() {
 
     function(data) {
 
-
       if (!data.success) {
 
         showError(
@@ -1642,30 +1265,20 @@ function searchProductName() {
         return;
       }
 
-
       renderSearchResults(
         data.results || []
       );
-
     }
-
   );
-
 }
 
 
-
-// ==========================================
 // SEARCH RESULTS
-// ==========================================
 
-function renderSearchResults(
-  results
-) {
+function renderSearchResults(results) {
 
   searchResults.innerHTML =
   "";
-
 
   if (!results.length) {
 
@@ -1681,12 +1294,10 @@ function renderSearchResults(
   results.forEach(
     function(product) {
 
-
       const div =
       document.createElement(
         "div"
       );
-
 
       div.className =
       "searchResult";
@@ -1697,10 +1308,8 @@ function renderSearchResults(
         "div"
       );
 
-
       name.className =
       "searchName";
-
 
       name.innerText =
       product.name ||
@@ -1712,10 +1321,8 @@ function renderSearchResults(
         "div"
       );
 
-
       details.className =
       "searchDetails";
-
 
       details.innerText =
 
@@ -1734,29 +1341,20 @@ function renderSearchResults(
       );
 
 
-      div.appendChild(
-        name
-      );
-
-
-      div.appendChild(
-        details
-      );
+      div.appendChild(name);
+      div.appendChild(details);
 
 
       div.addEventListener(
         "click",
         function() {
 
-
           lookupItem(
             product.item
           );
 
-
           manualItem.value =
           product.item;
-
         }
       );
 
@@ -1764,30 +1362,21 @@ function renderSearchResults(
       searchResults.appendChild(
         div
       );
-
     }
   );
-
 }
 
 
-
-// ==========================================
 // PRODUCT CARD
-// ==========================================
 
-function showProductCard(
-  data
-) {
+function showProductCard(data) {
 
   productCard.style.display =
   "block";
 
-
   productName.innerText =
   data.name ||
   "No product name";
-
 
   productItem.innerText =
   data.item ||
@@ -1801,10 +1390,7 @@ function showProductCard(
   ) {
 
     const price =
-    Number(
-      data.price
-    );
-
+    Number(data.price);
 
     if (!isNaN(price)) {
 
@@ -1816,14 +1402,12 @@ function showProductCard(
 
       productPrice.innerText =
       data.price;
-
     }
 
   } else {
 
     productPrice.innerText =
     "—";
-
   }
 
 
@@ -1836,14 +1420,10 @@ function showProductCard(
   Number(
     data.quantity || 0
   );
-
 }
 
 
-
-// ==========================================
 // UNDO
-// ==========================================
 
 function undoLastItem() {
 
@@ -1851,10 +1431,8 @@ function undoLastItem() {
     return;
   }
 
-
   const undoData =
   lastSuccessfulScan;
-
 
   undoButton.disabled =
   true;
@@ -1873,7 +1451,6 @@ function undoLastItem() {
     "undo",
 
     {
-
       item:
         undoData.item,
 
@@ -1882,11 +1459,9 @@ function undoLastItem() {
 
       previousQuantity:
         undoData.previousQuantity
-
     },
 
     function(data) {
-
 
       if (!data.success) {
 
@@ -1895,7 +1470,6 @@ function undoLastItem() {
           "Undo failed"
         );
 
-
         undoButton.disabled =
         false;
 
@@ -1903,15 +1477,8 @@ function undoLastItem() {
       }
 
 
-
-      /*
-        Adjust session counters.
-      */
-
       if (totalScanCount > 0) {
-
         totalScanCount--;
-
       }
 
 
@@ -1920,19 +1487,13 @@ function undoLastItem() {
         undoData.action === "ADD"
       ) {
 
-        if (
-          unitsAddedCount > 0
-        ) {
-
+        if (unitsAddedCount > 0) {
           unitsAddedCount--;
-
         }
-
       }
 
 
       updateStats();
-
 
 
       showProductCard({
@@ -1951,9 +1512,7 @@ function undoLastItem() {
 
         quantity:
           data.restoredQuantity
-
       });
-
 
 
       if (
@@ -2009,7 +1568,6 @@ function undoLastItem() {
             data.restoredLocation ||
             "blank"
           )
-
         );
 
       } else {
@@ -2055,16 +1613,9 @@ function undoLastItem() {
           Number(
             data.restoredQuantity || 0
           )
-
         );
-
       }
 
-
-
-      /*
-        Permit immediate re-scan.
-      */
 
       recentScans.delete(
         "I:" +
@@ -2075,28 +1626,18 @@ function undoLastItem() {
       lastSuccessfulScan =
       null;
 
-
       playUndoTone();
-
     }
-
   );
-
 }
 
 
-
-// ==========================================
 // ITEM NOT FOUND
-// ==========================================
 
-function showItemNotFound(
-  item
-) {
+function showItemNotFound(item) {
 
   productCard.style.display =
   "none";
-
 
   setStatus(
 
@@ -2112,37 +1653,26 @@ function showItemNotFound(
     true
   );
 
-
   playNotFoundTone();
-
 }
 
 
-
-// ==========================================
 // SESSION STATS
-// ==========================================
 
 function updateStats() {
 
   totalScansDisplay.innerText =
   totalScanCount;
 
-
   uniqueItemsDisplay.innerText =
   uniqueItemSet.size;
 
-
   totalUnitsDisplay.innerText =
   unitsAddedCount;
-
 }
 
 
-
-// ==========================================
 // HISTORY
-// ==========================================
 
 function addHistory(text) {
 
@@ -2151,14 +1681,10 @@ function addHistory(text) {
     .toLocaleTimeString(
       [],
       {
-        hour:
-          "2-digit",
-
-        minute:
-          "2-digit"
+        hour: "2-digit",
+        minute: "2-digit"
       }
     );
-
 
   history.unshift(
     time +
@@ -2166,22 +1692,16 @@ function addHistory(text) {
     text
   );
 
-
-  if (
-    history.length > 10
-  ) {
+  if (history.length > 10) {
 
     history =
     history.slice(
       0,
       10
     );
-
   }
 
-
   renderHistory();
-
 }
 
 
@@ -2189,7 +1709,6 @@ function renderHistory() {
 
   historyList.innerHTML =
   "";
-
 
   if (!history.length) {
 
@@ -2199,70 +1718,53 @@ function renderHistory() {
     return;
   }
 
-
   history.forEach(
     function(text) {
-
 
       const div =
       document.createElement(
         "div"
       );
 
-
       div.className =
       "historyItem";
-
 
       div.innerText =
       text;
 
-
       historyList.appendChild(
         div
       );
-
     }
   );
-
 }
 
 
-
-// ==========================================
 // CLEAR LOCATION
-// ==========================================
 
 function clearLocation() {
 
   currentLocation =
   "";
 
-
   localStorage.removeItem(
     "inventoryLocation"
   );
 
-
   locationDisplay.innerText =
   "Not selected";
 
-
   recentScans.clear();
-
 
   setStatus(
     "",
     "Scan Location QR first"
   );
-
 }
 
 
-
-// ==========================================
 // JSONP
-// ==========================================
+// Safari-safe version
 
 function jsonpRequest(
   action,
@@ -2271,27 +1773,24 @@ function jsonpRequest(
 ) {
 
   const callbackName =
-
-  "inventoryCallback_" +
-
-  Date.now() +
-
-  "_" +
-
-  Math.floor(
-    Math.random() *
-    100000
-  );
-
+    "inventoryCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(
+      Math.random() *
+      1000000
+    );
 
   const script =
   document.createElement(
     "script"
   );
 
-
   let finished =
   false;
+
+  let timeoutId =
+  null;
 
 
   window[callbackName] =
@@ -2301,16 +1800,34 @@ function jsonpRequest(
       return;
     }
 
-
     finished =
     true;
 
 
-    cleanup();
+    if (timeoutId) {
+      clearTimeout(
+        timeoutId
+      );
+    }
 
 
-    callback(data);
+    /*
+      IMPORTANT:
+      Process server response first.
 
+      Do not delete the global JSONP
+      callback before Safari has
+      completed script execution.
+    */
+
+    try {
+
+      callback(data);
+
+    } finally {
+
+      cleanup();
+    }
   };
 
 
@@ -2329,20 +1846,28 @@ function jsonpRequest(
     const key in parameters
   ) {
 
-    url +=
+    if (
+      Object.prototype
+        .hasOwnProperty.call(
+          parameters,
+          key
+        )
+    ) {
 
-    "&" +
+      url +=
 
-    encodeURIComponent(
-      key
-    ) +
+      "&" +
 
-    "=" +
+      encodeURIComponent(
+        key
+      ) +
 
-    encodeURIComponent(
-      parameters[key]
-    );
+      "=" +
 
+      encodeURIComponent(
+        parameters[key]
+      );
+    }
   }
 
 
@@ -2359,6 +1884,13 @@ function jsonpRequest(
   Date.now();
 
 
+  script.async =
+  true;
+
+  script.src =
+  url;
+
+
   script.onerror =
   function() {
 
@@ -2366,9 +1898,16 @@ function jsonpRequest(
       return;
     }
 
-
     finished =
     true;
+
+
+    if (timeoutId) {
+
+      clearTimeout(
+        timeoutId
+      );
+    }
 
 
     cleanup();
@@ -2377,40 +1916,41 @@ function jsonpRequest(
     showError(
       "Could not reach server"
     );
-
   };
 
 
-  script.src =
-  url;
+  /*
+    HEAD is more reliable for
+    dynamically loaded JSONP scripts
+    in mobile Safari.
+  */
 
-
-  document.body.appendChild(
+  document.head.appendChild(
     script
   );
 
 
+  timeoutId =
   setTimeout(
+
     function() {
 
       if (finished) {
         return;
       }
 
-
       finished =
       true;
 
-
       cleanup();
-
 
       showError(
         "Server timeout"
       );
 
     },
-    10000
+
+    30000
   );
 
 
@@ -2424,27 +1964,42 @@ function jsonpRequest(
         .removeChild(
           script
         );
-
     }
 
 
-    try {
+    /*
+      Safari:
+      keep callback alive briefly
+      after external script executes.
+    */
 
-      delete window[
-        callbackName
-      ];
+    setTimeout(
 
-    } catch(e) {}
+      function() {
 
+        try {
+
+          delete window[
+            callbackName
+          ];
+
+        } catch(e) {
+
+          window[
+            callbackName
+          ] =
+          undefined;
+        }
+
+      },
+
+      1000
+    );
   }
-
 }
 
 
-
-// ==========================================
 // HELPERS
-// ==========================================
 
 function cleanItem(value) {
 
@@ -2454,7 +2009,6 @@ function cleanItem(value) {
     .replace("#", "")
     .replace(/^I:/i, "")
     .trim();
-
 }
 
 
@@ -2475,11 +2029,8 @@ function cleanRecentScans(now) {
       recentScans.delete(
         code
       );
-
     }
-
   }
-
 }
 
 
@@ -2492,7 +2043,6 @@ function setStatus(
   statusDisplay.className =
   className || "";
 
-
   if (allowHtml) {
 
     statusDisplay.innerHTML =
@@ -2502,9 +2052,7 @@ function setStatus(
 
     statusDisplay.innerText =
     content;
-
   }
-
 }
 
 
@@ -2516,9 +2064,7 @@ function showError(message) {
     message
   );
 
-
   playErrorTone();
-
 }
 
 
@@ -2554,14 +2100,10 @@ function escapeHtml(value) {
       "'",
       "&#039;"
     );
-
 }
 
 
-
-// ==========================================
 // AUDIO
-// ==========================================
 
 function unlockAudio() {
 
@@ -2571,14 +2113,11 @@ function unlockAudio() {
       window.AudioContext ||
       window.webkitAudioContext;
 
-
     if (!audioContext) {
 
       audioContext =
       new AudioContext();
-
     }
-
 
     if (
       audioContext.state ===
@@ -2586,45 +2125,35 @@ function unlockAudio() {
     ) {
 
       audioContext.resume();
-
     }
-
 
     const oscillator =
       audioContext
         .createOscillator();
 
-
     const gain =
       audioContext
         .createGain();
 
-
     gain.gain.value =
     0.0001;
-
 
     oscillator.connect(
       gain
     );
 
-
     gain.connect(
       audioContext.destination
     );
 
-
     oscillator.start();
-
 
     oscillator.stop(
       audioContext.currentTime +
       0.05
     );
 
-
   } catch(e) {}
-
 }
 
 
@@ -2640,53 +2169,42 @@ function playTone(
       return;
     }
 
-
     if (
       audioContext.state ===
       "suspended"
     ) {
 
       audioContext.resume();
-
     }
-
 
     const oscillator =
       audioContext
         .createOscillator();
 
-
     const gain =
       audioContext
         .createGain();
-
 
     oscillator.connect(
       gain
     );
 
-
     gain.connect(
       audioContext.destination
     );
 
-
     oscillator.type =
     "sine";
 
-
     oscillator.frequency.value =
     frequency;
-
 
     gain.gain.setValueAtTime(
 
       volume || 0.35,
 
       audioContext.currentTime
-
     );
-
 
     gain.gain
       .exponentialRampToValueAtTime(
@@ -2695,23 +2213,17 @@ function playTone(
 
         audioContext.currentTime +
         duration / 1000
-
       );
 
-
     oscillator.start();
-
 
     oscillator.stop(
 
       audioContext.currentTime +
       duration / 1000
-
     );
 
-
   } catch(e) {}
-
 }
 
 
@@ -2722,7 +2234,6 @@ function playLocationTone() {
     120,
     0.25
   );
-
 }
 
 
@@ -2733,7 +2244,6 @@ function playSuccessTone() {
     110,
     0.35
   );
-
 
   setTimeout(
     function() {
@@ -2747,7 +2257,6 @@ function playSuccessTone() {
     },
     125
   );
-
 }
 
 
@@ -2758,7 +2267,6 @@ function playMoveTone() {
     150,
     0.4
   );
-
 
   setTimeout(
     function() {
@@ -2773,7 +2281,6 @@ function playMoveTone() {
     170
   );
 
-
   setTimeout(
     function() {
 
@@ -2786,7 +2293,6 @@ function playMoveTone() {
     },
     360
   );
-
 }
 
 
@@ -2797,7 +2303,6 @@ function playLookupTone() {
     100,
     0.25
   );
-
 }
 
 
@@ -2808,7 +2313,6 @@ function playErrorTone() {
     450,
     0.4
   );
-
 }
 
 
@@ -2819,7 +2323,6 @@ function playNotFoundTone() {
     250,
     0.5
   );
-
 
   setTimeout(
     function() {
@@ -2834,7 +2337,6 @@ function playNotFoundTone() {
     300
   );
 
-
   setTimeout(
     function() {
 
@@ -2847,7 +2349,6 @@ function playNotFoundTone() {
     },
     600
   );
-
 }
 
 
@@ -2858,7 +2359,6 @@ function playUndoTone() {
     120,
     0.3
   );
-
 
   setTimeout(
     function() {
@@ -2872,9 +2372,7 @@ function playUndoTone() {
     },
     130
   );
-
 }
-
 
 </script>
 
