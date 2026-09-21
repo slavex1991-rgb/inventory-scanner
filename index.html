@@ -81,6 +81,17 @@
       color: white;
     }
 
+    #undoButton {
+      background: #ff9800;
+      color: white;
+      font-weight: bold;
+    }
+
+    #undoButton:disabled {
+      background: #cccccc;
+      color: #777777;
+    }
+
     #clearButton {
       background: #ddd;
     }
@@ -93,6 +104,12 @@
 
     .error {
       background: #ef4444 !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .undo {
+      background: #ff9800 !important;
       color: white !important;
       font-weight: bold;
     }
@@ -154,6 +171,14 @@
 </div>
 
 
+<button
+  id="undoButton"
+  disabled
+>
+  UNDO LAST ITEM
+</button>
+
+
 <button id="clearButton">
   CLEAR LOCATION
 </button>
@@ -180,17 +205,25 @@ let audioContext = null;
 
 
 /*
-  Protection against duplicate scans.
-
-  The same QR cannot be processed again
-  for 8 seconds.
-
-  A different QR can be scanned immediately.
+  Information about the last
+  successfully scanned item.
 */
 
-const recentScans = new Map();
+let lastSuccessfulScan = null;
 
-const SAME_QR_LOCK_TIME = 8000;
+
+
+/*
+  Same QR cannot be processed again
+  for 8 seconds.
+*/
+
+const recentScans =
+new Map();
+
+
+const SAME_QR_LOCK_TIME =
+8000;
 
 
 
@@ -212,6 +245,10 @@ document.getElementById("counter");
 
 const startButton =
 document.getElementById("startButton");
+
+
+const undoButton =
+document.getElementById("undoButton");
 
 
 const clearButton =
@@ -237,6 +274,12 @@ startButton.addEventListener(
 );
 
 
+undoButton.addEventListener(
+  "click",
+  undoLastItem
+);
+
+
 clearButton.addEventListener(
   "click",
   clearLocation
@@ -248,10 +291,7 @@ function startScanner() {
 
 
   /*
-    Activate audio while START SCANNER
-    is being pressed.
-
-    Important for iPhone / Safari.
+    Unlock audio on iPhone.
   */
 
   try {
@@ -264,12 +304,15 @@ function startScanner() {
     if (!audioContext) {
 
       audioContext =
-        new AudioContext();
+      new AudioContext();
 
     }
 
 
-    if (audioContext.state === "suspended") {
+    if (
+      audioContext.state ===
+      "suspended"
+    ) {
 
       audioContext.resume();
 
@@ -302,7 +345,8 @@ function startScanner() {
 
 
     unlockOscillator.stop(
-      audioContext.currentTime + 0.05
+      audioContext.currentTime +
+      0.05
     );
 
 
@@ -388,11 +432,7 @@ function onScanSuccess(decodedText) {
 
 
   /*
-    CHECK FOR DUPLICATE QR
-
-    If this exact QR was scanned
-    less than 8 seconds ago,
-    ignore it completely.
+    DUPLICATE PROTECTION
   */
 
   const previousScan =
@@ -411,22 +451,12 @@ function onScanSuccess(decodedText) {
   }
 
 
-
-  /*
-    Remember this QR and the time
-    it was scanned.
-  */
-
   recentScans.set(
     code,
     now
   );
 
 
-
-  /*
-    Remove old entries from memory.
-  */
 
   for (
 
@@ -452,12 +482,15 @@ function onScanSuccess(decodedText) {
 
 
 
-  // LOCATION QR
-  // Example: L:1
+  /*
+    LOCATION QR
+    Example: L:1
+  */
 
   if (
 
-    code.toUpperCase().startsWith("L:")
+    code.toUpperCase()
+      .startsWith("L:")
 
   ) {
 
@@ -514,12 +547,15 @@ function onScanSuccess(decodedText) {
 
 
 
-  // ITEM QR
-  // Example: I:5067
+  /*
+    ITEM QR
+    Example: I:5067
+  */
 
   if (
 
-    code.toUpperCase().startsWith("I:")
+    code.toUpperCase()
+      .startsWith("I:")
 
   ) {
 
@@ -535,7 +571,6 @@ function onScanSuccess(decodedText) {
     }
 
 
-
     if (!currentLocation) {
 
 
@@ -547,7 +582,6 @@ function onScanSuccess(decodedText) {
       return;
 
     }
-
 
 
     saveItem(item);
@@ -593,8 +627,9 @@ function saveItem(item) {
 
 
   const script =
-
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
 
 
 
@@ -610,11 +645,15 @@ function saveItem(item) {
 
     "&location=" +
 
-    encodeURIComponent(currentLocation) +
+    encodeURIComponent(
+      currentLocation
+    ) +
 
     "&callback=" +
 
-    encodeURIComponent(callbackName) +
+    encodeURIComponent(
+      callbackName
+    ) +
 
     "&t=" +
 
@@ -636,6 +675,30 @@ function saveItem(item) {
 
 
     if (data.success) {
+
+
+      /*
+        Store information required
+        to undo this scan.
+      */
+
+      lastSuccessfulScan = {
+
+        item:
+          item,
+
+        previousLocation:
+          data.previousLocation || "",
+
+        newLocation:
+          currentLocation
+
+      };
+
+
+      undoButton.disabled =
+        false;
+
 
 
       scannedCount++;
@@ -688,7 +751,8 @@ function saveItem(item) {
 
 
 
-  script.onerror = function() {
+  script.onerror =
+  function() {
 
 
     if (!finished) {
@@ -741,9 +805,296 @@ function saveItem(item) {
 
     if (script.parentNode) {
 
-      script.parentNode.removeChild(
-        script
+      script.parentNode
+        .removeChild(
+          script
+        );
+
+    }
+
+
+    try {
+
+      delete window[
+        callbackName
+      ];
+
+    } catch(e) {}
+
+  }
+
+}
+
+
+
+/*
+  =========================
+  UNDO LAST ITEM
+  =========================
+*/
+
+function undoLastItem() {
+
+
+  if (!lastSuccessfulScan) {
+
+    return;
+
+  }
+
+
+  const item =
+    lastSuccessfulScan.item;
+
+
+  const previousLocation =
+    lastSuccessfulScan
+      .previousLocation;
+
+
+  /*
+    Disable button immediately
+    so it cannot be pressed twice.
+  */
+
+  undoButton.disabled =
+    true;
+
+
+  statusDisplay.className =
+    "";
+
+
+  statusDisplay.innerText =
+
+    "Undoing Item #" +
+
+    item +
+
+    "...";
+
+
+
+  const callbackName =
+
+    "undoCallback_" +
+
+    Date.now();
+
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+
+  const url =
+
+    API_URL +
+
+    "?action=undo" +
+
+    "&item=" +
+
+    encodeURIComponent(item) +
+
+    "&previousLocation=" +
+
+    encodeURIComponent(
+      previousLocation
+    ) +
+
+    "&callback=" +
+
+    encodeURIComponent(
+      callbackName
+    ) +
+
+    "&t=" +
+
+    Date.now();
+
+
+
+  let finished = false;
+
+
+
+  window[callbackName] =
+
+  function(data) {
+
+
+    finished = true;
+
+
+
+    if (data.success) {
+
+
+      if (scannedCount > 0) {
+
+        scannedCount--;
+
+      }
+
+
+      counterDisplay.innerText =
+        scannedCount;
+
+
+      lastItemDisplay.innerText =
+        "—";
+
+
+      statusDisplay.className =
+        "undo";
+
+
+      if (previousLocation) {
+
+
+        statusDisplay.innerText =
+
+          "↶ Item #" +
+
+          item +
+
+          " restored to Location " +
+
+          previousLocation;
+
+
+      } else {
+
+
+        statusDisplay.innerText =
+
+          "↶ Item #" +
+
+          item +
+
+          " restored to blank location";
+
+      }
+
+
+      /*
+        Allow the same QR to be
+        scanned again immediately
+        after UNDO.
+      */
+
+      recentScans.delete(
+        "I:" + item
       );
+
+
+      lastSuccessfulScan =
+        null;
+
+
+      playUndoTone();
+
+
+    } else {
+
+
+      showError(
+
+        data.message ||
+
+        "Undo failed"
+
+      );
+
+
+      /*
+        Re-enable button if
+        server rejected undo.
+      */
+
+      undoButton.disabled =
+        false;
+
+    }
+
+
+
+    cleanup();
+
+  };
+
+
+
+  script.onerror =
+  function() {
+
+
+    if (!finished) {
+
+
+      showError(
+        "Could not undo item"
+      );
+
+
+      undoButton.disabled =
+        false;
+
+    }
+
+
+    cleanup();
+
+  };
+
+
+
+  script.src =
+    url;
+
+
+  document.body.appendChild(
+    script
+  );
+
+
+
+  setTimeout(function() {
+
+
+    if (!finished) {
+
+
+      showError(
+        "Undo server timeout"
+      );
+
+
+      undoButton.disabled =
+        false;
+
+
+      cleanup();
+
+    }
+
+  }, 10000);
+
+
+
+  function cleanup() {
+
+
+    if (script.parentNode) {
+
+      script.parentNode
+        .removeChild(
+          script
+        );
 
     }
 
@@ -818,11 +1169,15 @@ function clearLocation() {
     "Scan Location QR first";
 
 
-  /*
-    Clear duplicate-scan memory too.
-  */
-
   recentScans.clear();
+
+
+  lastSuccessfulScan =
+    null;
+
+
+  undoButton.disabled =
+    true;
 
 }
 
@@ -858,7 +1213,10 @@ function playTone(
     }
 
 
-    if (audioContext.state === "suspended") {
+    if (
+      audioContext.state ===
+      "suspended"
+    ) {
 
       audioContext.resume();
 
@@ -866,11 +1224,13 @@ function playTone(
 
 
     const oscillator =
-      audioContext.createOscillator();
+      audioContext
+        .createOscillator();
 
 
     const gain =
-      audioContext.createGain();
+      audioContext
+        .createGain();
 
 
     oscillator.connect(
@@ -900,14 +1260,15 @@ function playTone(
     );
 
 
-    gain.gain.exponentialRampToValueAtTime(
+    gain.gain
+      .exponentialRampToValueAtTime(
 
-      0.01,
+        0.01,
 
-      audioContext.currentTime +
-      duration / 1000
+        audioContext.currentTime +
+        duration / 1000
 
-    );
+      );
 
 
     oscillator.start();
@@ -952,8 +1313,6 @@ function vibrateSuccess() {
   }
 
 
-  // Two high beeps = success
-
   playTone(
     850,
     120,
@@ -987,8 +1346,6 @@ function vibrateError() {
   }
 
 
-  // Low tone = error
-
   playTone(
     220,
     450,
@@ -998,8 +1355,40 @@ function vibrateError() {
 }
 
 
-</script>
 
+function playUndoTone() {
+
+
+  if (navigator.vibrate) {
+
+    navigator.vibrate(
+      [80, 50, 80]
+    );
+
+  }
+
+
+  playTone(
+    700,
+    120,
+    0.3
+  );
+
+
+  setTimeout(function() {
+
+    playTone(
+      500,
+      180,
+      0.3
+    );
+
+  }, 130);
+
+}
+
+
+</script>
 
 </body>
 
