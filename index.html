@@ -85,12 +85,20 @@
     }
 
     .success {
-      background: #d7f5df !important;
-    }
+  background: #22c55e !important;
+  color: white !important;
+  font-weight: bold;
+}
 
-    .error {
-      background: #ffdada !important;
-    }
+.error {
+  background: #ef4444 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+#status {
+  transition: background 0.15s ease;
+}
 
   </style>
 
@@ -724,35 +732,64 @@ function vibrate() {
 
 
 
-function vibrateSuccess() {
+function playTone(frequency, duration) {
 
+  try {
 
-  if (navigator.vibrate) {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
 
-    navigator.vibrate(
-    [100, 50, 100]
-    );
+    const audio =
+      new AudioContext();
 
-  }
+    const oscillator =
+      audio.createOscillator();
+
+    const gain =
+      audio.createGain();
+
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+
+    oscillator.frequency.value =
+      frequency;
+
+    gain.gain.value =
+      0.15;
+
+    oscillator.start();
+
+    setTimeout(function() {
+
+      oscillator.stop();
+      audio.close();
+
+    }, duration);
+
+  } catch(e) {}
 
 }
 
+
+function vibrateSuccess() {
+
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100]);
+  }
+
+  playTone(900, 150);
+}
 
 
 function vibrateError() {
 
-
   if (navigator.vibrate) {
-
-    navigator.vibrate(
-    [300, 100, 300]
-    );
-
+    navigator.vibrate([300, 100, 300]);
   }
 
+  playTone(250, 400);
 }
-
-
 </script>
 
 
