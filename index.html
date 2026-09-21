@@ -150,16 +150,12 @@
 
 
 <div id="status">
-
   Scan Location QR first
-
 </div>
 
 
 <button id="clearButton">
-
   CLEAR LOCATION
-
 </button>
 
 
@@ -178,13 +174,23 @@ localStorage.getItem("inventoryLocation") || "";
 
 let scanner = null;
 
-let lastCode = "";
-
-let lastScanTime = 0;
-
 let scannedCount = 0;
 
 let audioContext = null;
+
+
+/*
+  Protection against duplicate scans.
+
+  The same QR cannot be processed again
+  for 8 seconds.
+
+  A different QR can be scanned immediately.
+*/
+
+const recentScans = new Map();
+
+const SAME_QR_LOCK_TIME = 8000;
 
 
 
@@ -226,14 +232,14 @@ if (currentLocation) {
 
 
 startButton.addEventListener(
-"click",
-startScanner
+  "click",
+  startScanner
 );
 
 
 clearButton.addEventListener(
-"click",
-clearLocation
+  "click",
+  clearLocation
 );
 
 
@@ -241,8 +247,12 @@ clearLocation
 function startScanner() {
 
 
-  // Activate audio while user is pressing the button.
-  // This is important for iPhone / Safari.
+  /*
+    Activate audio while START SCANNER
+    is being pressed.
+
+    Important for iPhone / Safari.
+  */
 
   try {
 
@@ -254,7 +264,7 @@ function startScanner() {
     if (!audioContext) {
 
       audioContext =
-      new AudioContext();
+        new AudioContext();
 
     }
 
@@ -266,10 +276,9 @@ function startScanner() {
     }
 
 
-    // Silent oscillator unlocks audio on iPhone.
-
     const unlockOscillator =
       audioContext.createOscillator();
+
 
     const unlockGain =
       audioContext.createGain();
@@ -283,6 +292,7 @@ function startScanner() {
       unlockGain
     );
 
+
     unlockGain.connect(
       audioContext.destination
     );
@@ -290,12 +300,14 @@ function startScanner() {
 
     unlockOscillator.start();
 
+
     unlockOscillator.stop(
       audioContext.currentTime + 0.05
     );
 
 
   } catch(e) {}
+
 
 
   statusDisplay.innerText =
@@ -367,19 +379,30 @@ function onScanSuccess(decodedText) {
 
 
   const now =
-  Date.now();
+    Date.now();
 
 
   const code =
-  decodedText.trim();
+    decodedText.trim();
 
+
+
+  /*
+    CHECK FOR DUPLICATE QR
+
+    If this exact QR was scanned
+    less than 8 seconds ago,
+    ignore it completely.
+  */
+
+  const previousScan =
+    recentScans.get(code) || 0;
 
 
   if (
 
-    code === lastCode &&
-
-    now - lastScanTime < 2500
+    now - previousScan <
+    SAME_QR_LOCK_TIME
 
   ) {
 
@@ -389,12 +412,43 @@ function onScanSuccess(decodedText) {
 
 
 
-  lastCode =
-  code;
+  /*
+    Remember this QR and the time
+    it was scanned.
+  */
+
+  recentScans.set(
+    code,
+    now
+  );
 
 
-  lastScanTime =
-  now;
+
+  /*
+    Remove old entries from memory.
+  */
+
+  for (
+
+    const [savedCode, savedTime]
+    of recentScans
+
+  ) {
+
+    if (
+
+      now - savedTime >
+      SAME_QR_LOCK_TIME
+
+    ) {
+
+      recentScans.delete(
+        savedCode
+      );
+
+    }
+
+  }
 
 
 
@@ -409,7 +463,7 @@ function onScanSuccess(decodedText) {
 
 
     const location =
-    code.substring(2).trim();
+      code.substring(2).trim();
 
 
     if (!location) {
@@ -420,7 +474,7 @@ function onScanSuccess(decodedText) {
 
 
     currentLocation =
-    location;
+      location;
 
 
     localStorage.setItem(
@@ -433,20 +487,20 @@ function onScanSuccess(decodedText) {
 
 
     locationDisplay.innerText =
-    currentLocation;
+      currentLocation;
 
 
     statusDisplay.className =
-    "success";
+      "success";
 
 
     statusDisplay.innerText =
 
-    "✓ Location " +
+      "✓ Location " +
 
-    currentLocation +
+      currentLocation +
 
-    " selected";
+      " selected";
 
 
     vibrate();
@@ -471,7 +525,7 @@ function onScanSuccess(decodedText) {
 
 
     const item =
-    code.substring(2).trim();
+      code.substring(2).trim();
 
 
     if (!item) {
@@ -486,9 +540,7 @@ function onScanSuccess(decodedText) {
 
 
       showError(
-
         "Scan Location first"
-
       );
 
 
@@ -508,9 +560,7 @@ function onScanSuccess(decodedText) {
 
 
   showError(
-
     "Unknown QR: " + code
-
   );
 
 }
@@ -521,54 +571,54 @@ function saveItem(item) {
 
 
   statusDisplay.className =
-  "";
+    "";
 
 
   statusDisplay.innerText =
 
-  "Saving Item #" +
+    "Saving Item #" +
 
-  item +
+    item +
 
-  "...";
+    "...";
 
 
 
   const callbackName =
 
-  "inventoryCallback_" +
+    "inventoryCallback_" +
 
-  Date.now();
+    Date.now();
 
 
 
   const script =
 
-  document.createElement("script");
+    document.createElement("script");
 
 
 
   const url =
 
-  API_URL +
+    API_URL +
 
-  "?action=update" +
+    "?action=update" +
 
-  "&item=" +
+    "&item=" +
 
-  encodeURIComponent(item) +
+    encodeURIComponent(item) +
 
-  "&location=" +
+    "&location=" +
 
-  encodeURIComponent(currentLocation) +
+    encodeURIComponent(currentLocation) +
 
-  "&callback=" +
+    "&callback=" +
 
-  encodeURIComponent(callbackName) +
+    encodeURIComponent(callbackName) +
 
-  "&t=" +
+    "&t=" +
 
-  Date.now();
+    Date.now();
 
 
 
@@ -592,26 +642,26 @@ function saveItem(item) {
 
 
       counterDisplay.innerText =
-      scannedCount;
+        scannedCount;
 
 
       lastItemDisplay.innerText =
-      "#" + item;
+        "#" + item;
 
 
       statusDisplay.className =
-      "success";
+        "success";
 
 
       statusDisplay.innerText =
 
-      "✓ Item #" +
+        "✓ Item #" +
 
-      item +
+        item +
 
-      " → Location " +
+        " → Location " +
 
-      currentLocation;
+        currentLocation;
 
 
       vibrateSuccess();
@@ -645,9 +695,7 @@ function saveItem(item) {
 
 
       showError(
-
         "Could not reach server"
-
       );
 
     }
@@ -660,7 +708,7 @@ function saveItem(item) {
 
 
   script.src =
-  url;
+    url;
 
 
   document.body.appendChild(
@@ -676,9 +724,7 @@ function saveItem(item) {
 
 
       showError(
-
         "Server timeout"
-
       );
 
 
@@ -720,14 +766,14 @@ function showError(message) {
 
 
   statusDisplay.className =
-  "error";
+    "error";
 
 
   statusDisplay.innerText =
 
-  "ERROR: " +
+    "ERROR: " +
 
-  message;
+    message;
 
 
   vibrateError();
@@ -740,7 +786,7 @@ function clearLocation() {
 
 
   currentLocation =
-  "";
+    "";
 
 
   localStorage.removeItem(
@@ -749,27 +795,34 @@ function clearLocation() {
 
 
   locationDisplay.innerText =
-  "Not selected";
+    "Not selected";
 
 
   lastItemDisplay.innerText =
-  "—";
+    "—";
 
 
   scannedCount =
-  0;
+    0;
 
 
   counterDisplay.innerText =
-  "0";
+    "0";
 
 
   statusDisplay.className =
-  "";
+    "";
 
 
   statusDisplay.innerText =
-  "Scan Location QR first";
+    "Scan Location QR first";
+
+
+  /*
+    Clear duplicate-scan memory too.
+  */
+
+  recentScans.clear();
 
 }
 
@@ -899,7 +952,7 @@ function vibrateSuccess() {
   }
 
 
-  // Two high beeps = successful item
+  // Two high beeps = success
 
   playTone(
     850,
