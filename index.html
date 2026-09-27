@@ -1045,37 +1045,36 @@ function printQrLabel() {
       printWindow.document.open();
 
       printWindow.document.write(
-        '<!DOCTYPE html>' +
-        '<html><head>' +
-        '<meta charset="UTF-8">' +
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
-        '<title>Item ' + escapeHtml(item) + '</title>' +
-        '<style>' +
-        '@page { size: 58mm 58mm; margin: 0; }' +
-        'html, body { width: 58mm; margin: 0 !important; padding: 0 !important; background: white; }' +
-        'body { font-family: Arial, sans-serif; color: black; }' +
-        '.labelPage { width: 58mm; height: 58mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
-        '#qrLabel { page-break-after: always; break-after: page; }' +
-        '#qrImage { width: 39mm; height: 39mm; display: block; flex: 0 0 39mm; image-rendering: pixelated; }' +
-        '#itemNumber { margin-top: 1mm; font-size: 7.5mm; line-height: 1; font-weight: 700; text-align: center; }' +
-       '#numberLabel { position: relative; display: block; }' +
-'#bigItemNumber { position: absolute; left: 1mm; right: 1mm; top: 50%; transform: translateY(-50%); font-size: 13mm; line-height: 1; font-weight: 900; text-align: center; white-space: nowrap; }' +
-        '@media print { .labelPage { width: 58mm; height: 58mm; } }' +
-        '</style>' +
-        '</head><body>' +
-        '<div id="qrLabel" class="labelPage">' +
-        '<img id="qrImage" alt="QR Code">' +
-        '<div id="itemNumber">' + escapeHtml(item) + '</div>' +
-        '</div>' +
-        '<div id="numberLabel" class="labelPage">' +
-        '<div id="bigItemNumber">' + escapeHtml(item) + '</div>' +
-        '</div>' +
-        '<script>' +
-        'var img=document.getElementById("qrImage");' +
-        'img.onload=function(){setTimeout(function(){window.print();},250);};' +
-        'img.src=' + JSON.stringify(qrDataUrl) + ';' +
-        '<\/script>' +
-        '</body></html>'
+      '<!DOCTYPE html>' +
+'<html><head>' +
+'<meta charset="UTF-8">' +
+'<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+'<title>Item ' + escapeHtml(item) + '</title>' +
+'<style>' +
+'@page { size: 62mm 100mm; margin: 0; }' +
+'html, body { width: 62mm; height: 100mm; margin: 0; padding: 0; background: white; }' +
+'body { font-family: Arial, sans-serif; color: black; }' +
+'.labelPage { width: 62mm; height: 100mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }' +
+'#qrImage { width: 50mm; height: 50mm; display: block; image-rendering: pixelated; }' +
+'#itemNumber { margin-top: 5mm; font-size: 16mm; line-height: 1; font-weight: 700; text-align: center; }' +
+'@media print { @page { size: 62mm 100mm; margin: 0; } html, body { margin: 0 !important; padding: 0 !important; } }' +
+'</style>' +
+'</head><body>' +
+'<div class="labelPage">' +
+'<img id="qrImage" alt="QR Code">' +
+'<div id="itemNumber">' + escapeHtml(item) + '</div>' +
+'</div>' +
+'<script>' +
+'var img = document.getElementById("qrImage");' +
+'img.onload = function() {' +
+'  setTimeout(function() { window.print(); }, 250);' +
+'};' +
+'window.onafterprint = function() {' +
+'  setTimeout(function() { window.close(); }, 300);' +
+'};' +
+'img.src = ' + JSON.stringify(qrDataUrl) + ';' +
+'</script>' +
+'</body></html>'
       );
 
       printWindow.document.close();
