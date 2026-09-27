@@ -405,7 +405,9 @@ input {
 <button id="startButton">
   START SCANNER
 </button>
-
+<button id="stopButton" style="display:none; background:#dc2626; color:white;">
+  STOP CAMERA
+</button>
 
 <div id="reader"></div>
 
@@ -616,7 +618,10 @@ const startButton =
 document.getElementById(
   "startButton"
 );
-
+const stopButton =
+document.getElementById(
+  "stopButton"
+);
 const inventoryButton =
 document.getElementById(
   "inventoryButton"
@@ -806,7 +811,10 @@ startButton.addEventListener(
   startScanner
 );
 
-
+stopButton.addEventListener(
+  "click",
+  stopScanner
+);
 undoButton.addEventListener(
   "click",
   undoLastItem
@@ -1147,7 +1155,7 @@ function startScanner() {
     startButton.style.display =
     "none";
 
-
+stopButton.style.display = "block";
     if (
       currentMode === "lookup"
     ) {
@@ -1186,6 +1194,34 @@ function startScanner() {
 
   });
 
+}
+  function stopScanner() {
+
+  if (!scannerStarted || !scanner) {
+    return;
+  }
+
+  scanner.stop()
+    .then(function() {
+
+      scannerStarted = false;
+
+      startButton.style.display = "block";
+stopButton.style.display = "none";
+      setStatus(
+        "",
+        "Camera stopped"
+      );
+
+    })
+    .catch(function(error) {
+
+      showError(
+        "Could not stop camera: " +
+        error
+      );
+
+    });
 }
 
 
