@@ -12,6 +12,7 @@
 <title>Inventory Scanner</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 
@@ -212,6 +213,11 @@ input {
 
 #manualLookupButton {
   background: #6f42c1;
+  color: white;
+}
+
+#printLabelButton {
+  background: #111827;
   color: white;
 }
 
@@ -436,6 +442,10 @@ input {
 
   </div>
 
+  <button id="printLabelButton">
+    🖨 PRINT QR LABEL
+  </button>
+
 </div>
 
 
@@ -640,6 +650,11 @@ document.getElementById(
 const manualLookupButton =
 document.getElementById(
   "manualLookupButton"
+);
+
+const printLabelButton =
+document.getElementById(
+  "printLabelButton"
 );
 
 const nameSearch =
@@ -872,6 +887,12 @@ manualLookupButton.addEventListener(
 );
 
 
+printLabelButton.addEventListener(
+  "click",
+  printQrLabel
+);
+
+
 searchNameButton.addEventListener(
   "click",
   searchProductName
@@ -909,6 +930,85 @@ nameSearch.addEventListener(
   }
 );
 
+
+
+// ==========================================
+// PRINT QR LABEL
+// ==========================================
+
+function printQrLabel() {
+
+  const item =
+  cleanItem(
+    manualItem.value
+  );
+
+  if (!item) {
+    showError(
+      "Enter Item #"
+    );
+    return;
+  }
+
+  const qrPayload =
+  "I:" + item;
+
+  const printWindow =
+  window.open(
+    "",
+    "_blank",
+    "width=500,height=650"
+  );
+
+  if (!printWindow) {
+    showError(
+      "Allow pop-ups to print label"
+    );
+    return;
+  }
+
+  printWindow.document.open();
+
+  printWindow.document.write(
+    '<!DOCTYPE html>' +
+    '<html><head>' +
+    '<meta charset="UTF-8">' +
+    '<title>Item ' + escapeHtml(item) + '</title>' +
+    '<style>' +
+    '@page { size: 62mm 50.8mm; margin: 0; }' +
+    'html, body { width: 62mm; height: 50.8mm; margin: 0; padding: 0; }' +
+    'body { font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; background: white; color: black; }' +
+    '#label { width: 62mm; height: 50.8mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
+    '#qr { width: 34mm; height: 34mm; display: flex; align-items: center; justify-content: center; }' +
+    '#qr img, #qr canvas { width: 34mm !important; height: 34mm !important; }' +
+    '#itemNumber { margin-top: 1.5mm; font-size: 7mm; line-height: 1; font-weight: 700; text-align: center; }' +
+    '@media print { html, body { width: 62mm; height: 50.8mm; } }' +
+    '</style>' +
+    '</head><body>' +
+    '<div id="label">' +
+    '<div id="qr"></div>' +
+    '<div id="itemNumber">' + escapeHtml(item) + '</div>' +
+    '</div>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\\/script>' +
+    '<script>' +
+    'window.addEventListener("load", function(){' +
+    'new QRCode(document.getElementById("qr"), {' +
+    'text:' + JSON.stringify(qrPayload) + ',' +
+    'width:320,height:320,correctLevel:QRCode.CorrectLevel.M' +
+    '});' +
+    'setTimeout(function(){ window.print(); }, 350);' +
+    '});' +
+    '<\\/script>' +
+    '</body></html>'
+  );
+
+  printWindow.document.close();
+
+  setStatus(
+    "",
+    "Print label for Item #" + item
+  );
+}
 
 
 // ==========================================
