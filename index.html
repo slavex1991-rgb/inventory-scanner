@@ -140,7 +140,7 @@ button {
 }
 
 .lookupStatus {
-  background: #6f42c1 !important;
+  background: var(--lookup-color, #6f42c1) !important;
   color: white !important;
 }
 
@@ -1649,7 +1649,10 @@ function lookupItem(item) {
           data.itemColor || ""
 
       });
-
+statusDisplay.style.setProperty(
+  "--lookup-color",
+  data.itemColor || "#6f42c1"
+);
 
       setStatus(
 
