@@ -1051,18 +1051,23 @@ function printQrLabel() {
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
         '<title>Item ' + escapeHtml(item) + '</title>' +
         '<style>' +
-        '@page { size: 62mm 50.8mm; margin: 0; }' +
-        'html, body { width: 62mm; height: 50.8mm; margin: 0; padding: 0; background: white; }' +
+        '@page { size: 58mm 58mm; margin: 0; }' +
+        'html, body { width: 58mm; margin: 0 !important; padding: 0 !important; background: white; }' +
         'body { font-family: Arial, sans-serif; color: black; }' +
-        '#label { width: 62mm; height: 50.8mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
-        '#qrImage { width: 34mm; height: 34mm; display: block; image-rendering: pixelated; }' +
-        '#itemNumber { margin-top: 1.5mm; font-size: 7mm; line-height: 1; font-weight: 700; text-align: center; }' +
-        '@media print { html, body { width: 62mm; height: 50.8mm; } }' +
+        '.labelPage { width: 58mm; height: 58mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
+        '#qrLabel { page-break-after: always; break-after: page; }' +
+        '#qrImage { width: 39mm; height: 39mm; display: block; flex: 0 0 39mm; image-rendering: pixelated; }' +
+        '#itemNumber { margin-top: 1mm; font-size: 7.5mm; line-height: 1; font-weight: 700; text-align: center; }' +
+        '#bigItemNumber { width: 56mm; font-size: 15mm; line-height: 1; font-weight: 900; text-align: center; white-space: nowrap; }' +
+        '@media print { .labelPage { width: 58mm; height: 58mm; } }' +
         '</style>' +
         '</head><body>' +
-        '<div id="label">' +
+        '<div id="qrLabel" class="labelPage">' +
         '<img id="qrImage" alt="QR Code">' +
         '<div id="itemNumber">' + escapeHtml(item) + '</div>' +
+        '</div>' +
+        '<div id="numberLabel" class="labelPage">' +
+        '<div id="bigItemNumber">' + escapeHtml(item) + '</div>' +
         '</div>' +
         '<script>' +
         'var img=document.getElementById("qrImage");' +
