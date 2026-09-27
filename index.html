@@ -950,63 +950,138 @@ function printQrLabel() {
     return;
   }
 
-  const qrPayload =
-  "I:" + item;
-
-  const printWindow =
-  window.open(
-    "",
-    "_blank",
-    "width=500,height=650"
-  );
-
-  if (!printWindow) {
+  if (typeof QRCode === "undefined") {
     showError(
-      "Allow pop-ups to print label"
+      "QR generator not loaded. Refresh page."
     );
     return;
   }
 
-  printWindow.document.open();
+  const qrPayload =
+  "I:" + item;
 
-  printWindow.document.write(
-    '<!DOCTYPE html>' +
-    '<html><head>' +
-    '<meta charset="UTF-8">' +
-    '<title>Item ' + escapeHtml(item) + '</title>' +
-    '<style>' +
-    '@page { size: 62mm 50.8mm; margin: 0; }' +
-    'html, body { width: 62mm; height: 50.8mm; margin: 0; padding: 0; }' +
-    'body { font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; background: white; color: black; }' +
-    '#label { width: 62mm; height: 50.8mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
-    '#qr { width: 34mm; height: 34mm; display: flex; align-items: center; justify-content: center; }' +
-    '#qr img, #qr canvas { width: 34mm !important; height: 34mm !important; }' +
-    '#itemNumber { margin-top: 1.5mm; font-size: 7mm; line-height: 1; font-weight: 700; text-align: center; }' +
-    '@media print { html, body { width: 62mm; height: 50.8mm; } }' +
-    '</style>' +
-    '</head><body>' +
-    '<div id="label">' +
-    '<div id="qr"></div>' +
-    '<div id="itemNumber">' + escapeHtml(item) + '</div>' +
-    '</div>' +
-    '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\\/script>' +
-    '<script>' +
-    'window.addEventListener("load", function(){' +
-    'new QRCode(document.getElementById("qr"), {' +
-    'text:' + JSON.stringify(qrPayload) + ',' +
-    'width:320,height:320,correctLevel:QRCode.CorrectLevel.M' +
-    '});' +
-    'setTimeout(function(){ window.print(); }, 350);' +
-    '});' +
-    '<\\/script>' +
-    '</body></html>'
+  /*
+    Generate QR on the MAIN scanner page first.
+    This is more reliable on iPhone Safari than
+    loading the QR library inside the print window.
+  */
+  const qrHolder =
+  document.createElement("div");
+
+  qrHolder.style.position = "fixed";
+  qrHolder.style.left = "-10000px";
+  qrHolder.style.top = "0";
+
+  document.body.appendChild(
+    qrHolder
   );
 
-  printWindow.document.close();
+  new QRCode(
+    qrHolder,
+    {
+      text: qrPayload,
+      width: 600,
+      height: 600,
+      correctLevel:
+        QRCode.CorrectLevel.M
+    }
+  );
 
-  setStatus(
-    "",
-    "Print label for Item #" + item
+  setTimeout(
+    function() {
+
+      let qrDataUrl = "";
+
+      const canvas =
+      qrHolder.querySelector(
+        "canvas"
+      );
+
+      const img =
+      qrHolder.querySelector(
+        "img"
+      );
+
+      if (canvas) {
+        try {
+          qrDataUrl =
+          canvas.toDataURL(
+            "image/png"
+          );
+        } catch(e) {}
+      }
+
+      if (
+        !qrDataUrl &&
+        img &&
+        img.src
+      ) {
+        qrDataUrl =
+        img.src;
+      }
+
+      qrHolder.remove();
+
+      if (!qrDataUrl) {
+        showError(
+          "Could not create QR code"
+        );
+        return;
+      }
+
+      const printWindow =
+      window.open(
+        "",
+        "_blank"
+      );
+
+      if (!printWindow) {
+        showError(
+          "Allow pop-ups to print label"
+        );
+        return;
+      }
+
+      printWindow.document.open();
+
+      printWindow.document.write(
+        '<!DOCTYPE html>' +
+        '<html><head>' +
+        '<meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<title>Item ' + escapeHtml(item) + '</title>' +
+        '<style>' +
+        '@page { size: 62mm 50.8mm; margin: 0; }' +
+        'html, body { width: 62mm; height: 50.8mm; margin: 0; padding: 0; background: white; }' +
+        'body { font-family: Arial, sans-serif; color: black; }' +
+        '#label { width: 62mm; height: 50.8mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }' +
+        '#qrImage { width: 34mm; height: 34mm; display: block; image-rendering: pixelated; }' +
+        '#itemNumber { margin-top: 1.5mm; font-size: 7mm; line-height: 1; font-weight: 700; text-align: center; }' +
+        '@media print { html, body { width: 62mm; height: 50.8mm; } }' +
+        '</style>' +
+        '</head><body>' +
+        '<div id="label">' +
+        '<img id="qrImage" alt="QR Code">' +
+        '<div id="itemNumber">' + escapeHtml(item) + '</div>' +
+        '</div>' +
+        '<script>' +
+        'var img=document.getElementById("qrImage");' +
+        'img.onload=function(){setTimeout(function(){window.print();},250);};' +
+        'img.src=' + JSON.stringify(qrDataUrl) + ';' +
+        '<\/script>' +
+        '</body></html>'
+      );
+
+      printWindow.document.close();
+
+      setStatus(
+        "",
+        "Print label for Item #" +
+        item
+      );
+
+    },
+    150
   );
 }
 
