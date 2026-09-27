@@ -252,6 +252,37 @@ input {
   font-weight: bold;
 }
 
+.quantityEditor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quantityEditor button {
+  width: 58px;
+  min-width: 58px;
+  margin: 0;
+  padding: 11px 6px;
+  font-size: 26px;
+  line-height: 1;
+}
+
+#quantityInput {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#saveQuantityButton {
+  background: #16a34a;
+  color: white;
+  margin-top: 10px;
+}
+
 #searchResults {
   display: none;
   background: white;
@@ -503,6 +534,16 @@ input {
     <span id="productQuantity">—</span>
   </div>
 
+  <div class="quantityEditor">
+    <button id="quantityMinusButton" type="button">−</button>
+    <input id="quantityInput" type="number" inputmode="numeric" min="1" step="1" value="1">
+    <button id="quantityPlusButton" type="button">+</button>
+  </div>
+
+  <button id="saveQuantityButton" type="button">
+    SAVE QUANTITY
+  </button>
+
 </div>
 
 
@@ -707,6 +748,29 @@ document.getElementById(
   "productQuantity"
 );
 
+const quantityInput =
+document.getElementById(
+  "quantityInput"
+);
+
+const quantityMinusButton =
+document.getElementById(
+  "quantityMinusButton"
+);
+
+const quantityPlusButton =
+document.getElementById(
+  "quantityPlusButton"
+);
+
+const saveQuantityButton =
+document.getElementById(
+  "saveQuantityButton"
+);
+
+let productCardItem = "";
+let productCardQuantity = 0;
+
 const totalScansDisplay =
 document.getElementById(
   "totalScans"
@@ -894,6 +958,29 @@ manualLookupButton.addEventListener(
   }
 );
 
+
+quantityMinusButton.addEventListener(
+  "click",
+  function() {
+    let q = Math.floor(Number(quantityInput.value || productCardQuantity || 1));
+    if (isNaN(q) || q < 1) q = 1;
+    quantityInput.value = Math.max(1, q - 1);
+  }
+);
+
+quantityPlusButton.addEventListener(
+  "click",
+  function() {
+    let q = Math.floor(Number(quantityInput.value || productCardQuantity || 1));
+    if (isNaN(q) || q < 1) q = 1;
+    quantityInput.value = q + 1;
+  }
+);
+
+saveQuantityButton.addEventListener(
+  "click",
+  saveProductQuantity
+);
 
 printLabelButton.addEventListener(
   "click",
@@ -1448,6 +1535,35 @@ function sendInventoryTransaction(
 
         if (data.errorType === "ITEM_NOT_FOUND") {
           showItemNotFound(item);
+        } else if (data.errorType === "DIFFERENT_LOCATION") {
+          showProductCard({
+            item: data.item || item,
+            name: data.name || "",
+            price: data.price,
+            location: data.currentLocation || "",
+            quantity: Number(data.quantity || 1),
+            itemColor: data.itemColor || ""
+          });
+
+          setStatus(
+            "move",
+            "⚠️ ITEM ALREADY IN ANOTHER LOCATION" +
+            "<br><br>ITEM #" + escapeHtml(data.item || item) +
+            "<br>" + escapeHtml(data.name || "") +
+            "<br><br>CURRENT LOCATION: " + escapeHtml(data.currentLocation || "—") +
+            "<br>SELECTED LOCATION: " + escapeHtml(data.requestedLocation || location) +
+            "<br><br>QUANTITY: " + Number(data.quantity || 1) +
+            "<br><br>LOCATION WAS NOT CHANGED",
+            true
+          );
+
+          addHistory(
+            "⚠ #" + (data.item || item) +
+            " | Kept at " + (data.currentLocation || "—") +
+            " | Qty " + Number(data.quantity || 1)
+          );
+
+          playMoveTone();
         } else if (
           data.errorType === "TRANSACTION_UNCERTAIN" ||
           data.errorType === "VERIFY_FAILED"
@@ -1492,10 +1608,7 @@ function sendInventoryTransaction(
       totalScanCount++;
       uniqueItemSet.add(String(data.item || item));
 
-      if (
-        data.action === "FIRST" ||
-        data.action === "ADD"
-      ) {
+      if (data.action === "FIRST") {
         unitsAddedCount++;
       }
 
@@ -2009,11 +2122,125 @@ function showProductCard(
   "Not assigned";
 
 
-  productQuantity.innerText =
-  Number(
-    data.quantity || 0
+  const shownQuantity =
+  Math.max(
+    1,
+    Math.floor(
+      Number(data.quantity || 1)
+    )
   );
 
+  productQuantity.innerText =
+  shownQuantity;
+
+  quantityInput.value =
+  shownQuantity;
+
+  productCardItem =
+  String(data.item || "");
+
+  productCardQuantity =
+  shownQuantity;
+
+}
+
+
+
+
+// ==========================================
+// SAVE QUANTITY FROM PRODUCT CARD
+// ==========================================
+
+function saveProductQuantity() {
+
+  const item =
+  cleanItem(productCardItem);
+
+  let quantity =
+  Math.floor(
+    Number(quantityInput.value)
+  );
+
+  if (!item) {
+    showError("Open a product first");
+    return;
+  }
+
+  if (isNaN(quantity) || quantity < 1) {
+    showError("Quantity must be 1 or greater");
+    quantityInput.value = productCardQuantity || 1;
+    return;
+  }
+
+  saveQuantityButton.disabled = true;
+
+  setStatus(
+    "",
+    "Saving quantity for Item #" + item + "..."
+  );
+
+  jsonpRequest(
+    "quantity",
+    {
+      item: item,
+      quantity: quantity
+    },
+
+    function(data) {
+
+      saveQuantityButton.disabled = false;
+
+      if (!data.success) {
+        if (data.errorType === "ITEM_NOT_FOUND") {
+          showItemNotFound(item);
+        } else {
+          showError(
+            data.message ||
+            "Quantity update failed"
+          );
+        }
+        return;
+      }
+
+      productCardQuantity =
+      Number(data.quantity || quantity);
+
+      quantityInput.value =
+      productCardQuantity;
+
+      productQuantity.innerText =
+      productCardQuantity;
+
+      setStatus(
+        "success",
+        "✓ QUANTITY SAVED & VERIFIED" +
+        "<br><br>ITEM #" + escapeHtml(data.item || item) +
+        "<br>LOCATION: " + escapeHtml(data.location || "—") +
+        "<br><br>QUANTITY: " +
+        Number(data.previousQuantity || 0) +
+        " → " +
+        productCardQuantity,
+        true
+      );
+
+      addHistory(
+        "Qty #" + (data.item || item) +
+        " | " +
+        Number(data.previousQuantity || 0) +
+        " → " +
+        productCardQuantity
+      );
+
+      playSuccessTone();
+    },
+
+    function() {
+      saveQuantityButton.disabled = false;
+      showError(
+        "Quantity save status unknown. Check the item before trying again."
+      );
+    }
+  );
 }
 
 
