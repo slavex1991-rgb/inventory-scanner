@@ -1058,7 +1058,8 @@ function printQrLabel() {
         '#qrLabel { page-break-after: always; break-after: page; }' +
         '#qrImage { width: 39mm; height: 39mm; display: block; flex: 0 0 39mm; image-rendering: pixelated; }' +
         '#itemNumber { margin-top: 1mm; font-size: 7.5mm; line-height: 1; font-weight: 700; text-align: center; }' +
-        '#bigItemNumber { width: 56mm; font-size: 15mm; line-height: 1; font-weight: 900; text-align: center; white-space: nowrap; }' +
+       '#numberLabel { position: relative; display: block; }' +
+'#bigItemNumber { position: absolute; left: 1mm; right: 1mm; top: 50%; transform: translateY(-50%); font-size: 13mm; line-height: 1; font-weight: 900; text-align: center; white-space: nowrap; }' +
         '@media print { .labelPage { width: 58mm; height: 58mm; } }' +
         '</style>' +
         '</head><body>' +
