@@ -2310,10 +2310,47 @@ function changeProductLocation() {
     return;
   }
 
-  alert(
-    "Item #" + item +
-    "\nMove ALL quantity to Location " + newLocation + "?"
-  );
+saveLocationButton.disabled = true;
+
+jsonpRequest(
+  {
+    action: "changeLocation",
+    item: item,
+    location: newLocation
+  },
+  function(data) {
+    saveLocationButton.disabled = false;
+
+    if (!data || !data.success) {
+      showError(
+        (data && data.message) ||
+        "Location change failed"
+      );
+      return;
+    }
+
+    showProductCard(data);
+
+    addRecentActivity(
+      "Moved #" + item +
+      " | " +
+      (data.previousLocation || "Not assigned") +
+      " → " +
+      data.location +
+      " | Qty " +
+      data.quantity
+    );
+
+    playSuccessTone();
+  },
+  function() {
+    saveLocationButton.disabled = false;
+
+    showError(
+      "Location change status unknown. Check the item before trying again."
+    );
+  }
+);
 }
 
 
