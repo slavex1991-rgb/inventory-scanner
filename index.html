@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -545,49 +546,7 @@ input {
   </button>
 
 </div>
-<div id="changeLocationSection" style="margin-top:20px; display:none;">
-  <div style="font-size:18px; margin-bottom:8px;">
-    CHANGE LOCATION
-  
 
-  <select id="productLocationSelect" style="width:100%; padding:15px; font-size:20px;">
-    <option value="">Select Location</option>
-    <option value="1">Location 1</option>
-    <option value="2">Location 2</option>
-    <option value="3">Location 3</option>
-    <option value="4">Location 4</option>
-    <option value="5">Location 5</option>
-    <option value="6">Location 6</option>
-    <option value="7">Location 7</option>
-    <option value="8">Location 8</option>
-    <option value="9">Location 9</option>
-    <option value="10">Location 10</option>
-    <option value="11">Location 11</option>
-<option value="12">Location 12</option>
-<option value="13">Location 13</option>
-<option value="14">Location 14</option>
-<option value="15">Location 15</option>
-<option value="16">Location 16</option>
-<option value="17">Location 17</option>
-<option value="18">Location 18</option>
-<option value="19">Location 19</option>
-<option value="20">Location 20</option>
-<option value="21">Location 21</option>
-<option value="22">Location 22</option>
-<option value="23">Location 23</option>
-<option value="24">Location 24</option>
-<option value="25">Location 25</option>
-<option value="26">Location 26</option>
-<option value="27">Location 27</option>
-<option value="28">Location 28</option>
-<option value="29">Location 29</option>
-<option value="30">Location 30</option>
-  </select>
-
-  <button id="saveLocationButton" type="button" style="margin-top:10px;">
-    CHANGE LOCATION
-  </button>
-</div>
 
 <button
   id="undoButton"
@@ -620,6 +579,8 @@ input {
 
 <script>
 
+
+const SCANNER_BUILD = "2026-09-27-final";
 
 const API_URL =
 "https://script.google.com/macros/s/AKfycbyZwLEiOopCUoR66P5vNt7yBE4wXeNhStdfBopXbRErUFgQwiirXuH4LBYN9OlB3CmR/exec";
@@ -809,15 +770,7 @@ const saveQuantityButton =
 document.getElementById(
   "saveQuantityButton"
 );
-const productLocationSelect =
-  document.getElementById(
-    "productLocationSelect"
-  );
 
-const saveLocationButton =
-  document.getElementById(
-    "saveLocationButton"
-  );
 let productCardItem = "";
 let productCardQuantity = 0;
 
@@ -1031,10 +984,7 @@ saveQuantityButton.addEventListener(
   "click",
   saveProductQuantity
 );
-saveLocationButton.addEventListener(
-  "click",
-  changeProductLocation
-);
+
 printLabelButton.addEventListener(
   "click",
   printQrLabel
@@ -2088,7 +2038,7 @@ function renderSearchResults(
 function showProductCard(
   data
 ) {
-document.getElementById("changeLocationSection").style.display = "block";
+
   productCard.style.display =
   "block";
 
@@ -2175,20 +2125,26 @@ document.getElementById("changeLocationSection").style.display = "block";
   "Not assigned";
 
 
- let shownQuantity =
-Math.floor(
-  Number(data.quantity || 0)
-);
+  const rawQuantity =
+  Number(data.quantity);
 
-if (isNaN(shownQuantity) || shownQuantity < 0) {
-  shownQuantity = 0;
-}
+  const shownQuantity =
+  !isNaN(rawQuantity) && rawQuantity >= 0
+    ? Math.floor(rawQuantity)
+    : 0;
 
-productQuantity.innerText =
-shownQuantity;
+  productQuantity.innerText =
+  shownQuantity;
 
-quantityInput.value =
-shownQuantity;
+  quantityInput.value =
+  shownQuantity;
+
+  quantityInput.min = "0";
+
+  quantityInput.disabled = false;
+  quantityMinusButton.disabled = false;
+  quantityPlusButton.disabled = false;
+  saveQuantityButton.disabled = false;
 
   productCardItem =
   String(data.item || "");
@@ -2220,8 +2176,8 @@ function saveProductQuantity() {
     return;
   }
 
-  if (isNaN(quantity) || quantity < 1) {
-    showError("Quantity must be 1 or greater");
+  if (isNaN(quantity) || quantity < 0) {
+    showError("Quantity must be 0 or greater");
     quantityInput.value = productCardQuantity || 1;
     return;
   }
@@ -2233,13 +2189,14 @@ function saveProductQuantity() {
     "Saving quantity for Item #" + item + "..."
   );
 
- jsonpRequest(
-  "changeLocation",
-  {
-    item: item,
-    location: newLocation
-  },
-  function(data) {
+  jsonpRequest(
+    "quantity",
+    {
+      item: item,
+      quantity: quantity
+    },
+
+    function(data) {
 
       saveQuantityButton.disabled = false;
 
@@ -2295,62 +2252,7 @@ function saveProductQuantity() {
     }
   );
 }
-function changeProductLocation() {
-  const item = cleanItem(productCardItem);
-  const newLocation = productLocationSelect.value;
 
-  if (!item) {
-    showError("Open a product first");
-    return;
-  }
-
-  if (!newLocation) {
-    showError("Select a Location");
-    return;
-  }
-
-saveLocationButton.disabled = true;
-
-jsonpRequest(
-  {
-    action: "changeLocation",
-    item: item,
-    location: newLocation
-  },
-  function(data) {
-    saveLocationButton.disabled = false;
-
-    if (!data || !data.success) {
-      showError(
-        (data && data.message) ||
-        "Location change failed"
-      );
-      return;
-    }
-
-    showProductCard(data);
-
-    addRecentActivity(
-      "Moved #" + item +
-      " | " +
-      (data.previousLocation || "Not assigned") +
-      " → " +
-      data.location +
-      " | Qty " +
-      data.quantity
-    );
-
-    playSuccessTone();
-  },
-  function() {
-    saveLocationButton.disabled = false;
-
-    showError(
-      "Location change status unknown. Check the item before trying again."
-    );
-  }
-);
-}
 
 
 // ==========================================
@@ -2786,112 +2688,149 @@ function jsonpRequest(
   failureCallback
 ) {
 
-  const callbackName =
-    "inventoryCallback_" +
-    Date.now() +
-    "_" +
-    Math.floor(Math.random() * 1000000);
+  let attempt = 0;
+  const maxAttempts = 2;
 
-  const script = document.createElement("script");
-  let finished = false;
-  let timeoutId = null;
+  function runAttempt() {
 
-  window[callbackName] = function(data) {
-    if (finished) return;
+    attempt++;
 
-    finished = true;
+    const callbackName =
+      "inventoryCallback_" +
+      Date.now() +
+      "_" +
+      Math.floor(Math.random() * 1000000);
 
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
+    const script =
+      document.createElement("script");
 
-    try {
-      callback(data);
-    } finally {
-      cleanup();
-    }
-  };
+    let finished = false;
+    let timeoutId = null;
 
-  let url =
-    API_URL +
-    "?action=" +
-    encodeURIComponent(action);
+    window[callbackName] =
+    function(data) {
 
-  for (const key in parameters) {
-    if (
-      Object.prototype.hasOwnProperty.call(
-        parameters,
-        key
-      )
-    ) {
-      url +=
-        "&" +
-        encodeURIComponent(key) +
-        "=" +
-        encodeURIComponent(parameters[key]);
-    }
-  }
-
-  url +=
-    "&callback=" +
-    encodeURIComponent(callbackName) +
-    "&t=" +
-    Date.now();
-
-  script.async = true;
-  script.src = url;
-
-  script.onerror = function() {
-    if (finished) return;
-
-    finished = true;
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    cleanup();
-
-    if (failureCallback) {
-      failureCallback("network");
-    } else {
-      showError("Could not reach server");
-    }
-  };
-
-  document.head.appendChild(script);
-
-  timeoutId = setTimeout(
-    function() {
       if (finished) return;
 
       finished = true;
-      cleanup();
 
-      if (failureCallback) {
-        failureCallback("timeout");
-      } else {
-        showError("Server timeout");
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
-    },
-    15000
-  );
 
-  function cleanup() {
-    if (script.parentNode) {
-      script.parentNode.removeChild(script);
+      try {
+        callback(data);
+      } finally {
+        cleanup();
+      }
+    };
+
+    let url =
+      API_URL +
+      "?action=" +
+      encodeURIComponent(action);
+
+    for (const key in parameters) {
+      if (
+        Object.prototype.hasOwnProperty.call(
+          parameters,
+          key
+        )
+      ) {
+        url +=
+          "&" +
+          encodeURIComponent(key) +
+          "=" +
+          encodeURIComponent(parameters[key]);
+      }
     }
 
-    setTimeout(function() {
-      try {
-        delete window[callbackName];
-      } catch(e) {
-        window[callbackName] = undefined;
-      }
-    }, 1000);
-  }
-}
+    url +=
+      "&callback=" +
+      encodeURIComponent(callbackName) +
+      "&t=" +
+      Date.now();
 
+    script.async = true;
+    script.src = url;
+
+    script.onerror =
+    function() {
+
+      if (finished) return;
+
+      finished = true;
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      cleanup();
+
+      if (attempt < maxAttempts) {
+        setTimeout(
+          runAttempt,
+          700
+        );
+        return;
+      }
+
+      if (failureCallback) {
+        failureCallback("network");
+      } else {
+        showError("Could not reach server");
+      }
+    };
+
+    document.head.appendChild(script);
+
+    timeoutId =
+    setTimeout(
+      function() {
+
+        if (finished) return;
+
+        finished = true;
+        cleanup();
+
+        if (attempt < maxAttempts) {
+          setTimeout(
+            runAttempt,
+            700
+          );
+          return;
+        }
+
+        if (failureCallback) {
+          failureCallback("timeout");
+        } else {
+          showError("Server timeout");
+        }
+      },
+      15000
+    );
+
+    function cleanup() {
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+      setTimeout(
+        function() {
+          try {
+            delete window[callbackName];
+          } catch(e) {
+            window[callbackName] = undefined;
+          }
+        },
+        1000
+      );
+    }
+  }
+
+  runAttempt();
+}
 
 
 // ==========================================
