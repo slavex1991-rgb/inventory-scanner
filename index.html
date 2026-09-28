@@ -2233,14 +2233,13 @@ function saveProductQuantity() {
     "Saving quantity for Item #" + item + "..."
   );
 
-  jsonpRequest(
-    "quantity",
-    {
-      item: item,
-      quantity: quantity
-    },
-
-    function(data) {
+ jsonpRequest(
+  "changeLocation",
+  {
+    item: item,
+    location: newLocation
+  },
+  function(data) {
 
       saveQuantityButton.disabled = false;
 
