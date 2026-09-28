@@ -2122,19 +2122,20 @@ function showProductCard(
   "Not assigned";
 
 
-  const shownQuantity =
-  Math.max(
-    1,
-    Math.floor(
-      Number(data.quantity || 1)
-    )
-  );
+ let shownQuantity =
+Math.floor(
+  Number(data.quantity || 0)
+);
 
-  productQuantity.innerText =
-  shownQuantity;
+if (isNaN(shownQuantity) || shownQuantity < 0) {
+  shownQuantity = 0;
+}
 
-  quantityInput.value =
-  shownQuantity;
+productQuantity.innerText =
+shownQuantity;
+
+quantityInput.value =
+shownQuantity;
 
   productCardItem =
   String(data.item || "");
