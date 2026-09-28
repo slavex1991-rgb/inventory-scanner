@@ -1023,7 +1023,10 @@ saveQuantityButton.addEventListener(
   "click",
   saveProductQuantity
 );
-
+saveLocationButton.addEventListener(
+  "click",
+  changeProductLocation
+);
 printLabelButton.addEventListener(
   "click",
   printQrLabel
@@ -2285,7 +2288,25 @@ function saveProductQuantity() {
     }
   );
 }
+function changeProductLocation() {
+  const item = cleanItem(productCardItem);
+  const newLocation = productLocationSelect.value;
 
+  if (!item) {
+    showError("Open a product first");
+    return;
+  }
+
+  if (!newLocation) {
+    showError("Select a Location");
+    return;
+  }
+
+  alert(
+    "Item #" + item +
+    "\nMove ALL quantity to Location " + newLocation + "?"
+  );
+}
 
 
 // ==========================================
