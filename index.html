@@ -545,7 +545,7 @@ input {
   </button>
 
 </div>
-<div style="margin-top:20px;">
+<div id="changeLocationSection" style="margin-top:20px; display:none;">
   <div style="font-size:18px; margin-bottom:8px;">
     CHANGE LOCATION
   </div>
@@ -2088,7 +2088,7 @@ function renderSearchResults(
 function showProductCard(
   data
 ) {
-
+document.getElementById("changeLocationSection").style.display = "block";
   productCard.style.display =
   "block";
 
